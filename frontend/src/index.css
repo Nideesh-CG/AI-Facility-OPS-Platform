@@ -9,9 +9,9 @@
   --bg-primary: #F8FAFC;
   --bg-secondary: #FFFFFF;
   --bg-card: #FFFFFF;
-  --border-color: rgba(15, 23, 42, 0.08);
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
+  --border-color: #E5E7EB;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
   --accent-color: #2563EB;
   --success-color: #16A34A;
   --warning-color: #D97706;
@@ -26,8 +26,8 @@
   --bg-secondary: #111827;
   --bg-card: #1E293B;
   --border-color: rgba(255, 255, 255, 0.08);
-  --text-primary: #F9FAFB;
-  --text-secondary: #9CA3AF;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
   --accent-color: #3B82F6;
   --success-color: #22C55E;
   --warning-color: #F59E0B;

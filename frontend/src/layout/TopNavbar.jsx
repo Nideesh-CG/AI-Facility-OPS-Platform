@@ -6,10 +6,12 @@ import {
   Moon, 
   Bell, 
   Building2, 
-  ChevronDown 
+  ChevronDown,
+  Menu,
+  HelpCircle
 } from 'lucide-react';
 
-const TopNavbar = ({ sidebarCollapsed }) => {
+const TopNavbar = ({ sidebarCollapsed, toggleSidebar, onHelpClick, onNotificationsClick }) => {
   const { theme, toggleTheme } = useTheme();
   const [time, setTime] = useState(new Date());
   const [showFacilityDropdown, setShowFacilityDropdown] = useState(false);
@@ -39,20 +41,29 @@ const TopNavbar = ({ sidebarCollapsed }) => {
   };
 
   return (
-    <header className="fixed top-0 right-0 h-16 glass-panel border-b border-brand-border bg-brand-sec/80 z-20 flex items-center justify-between px-6 transition-all duration-300"
+    <header className="fixed top-0 right-0 h-16 glass-panel border-b border-brand-border bg-brand-sec/80 z-20 flex items-center justify-between px-4 sm:px-6 transition-all duration-300 backdrop-blur-md"
       style={{ left: sidebarCollapsed ? '72px' : '260px' }}
     >
-      {/* Left Side: Facility Selector & Live Badge */}
-      <div className="flex items-center gap-4">
+      {/* Left Side: Hamburger & Facility Selector & Live Badge */}
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Hamburger Menu Toggle */}
+        <button
+          onClick={toggleSidebar}
+          className="p-1.5 rounded-lg border border-brand-border hover:bg-brand-border/30 text-brand-textSec hover:text-brand-text transition-colors"
+          title="Toggle Sidebar"
+        >
+          <Menu className="w-4.5 h-4.5" />
+        </button>
+
         {/* Facility Selector */}
         <div className="relative">
           <button 
             onClick={() => setShowFacilityDropdown(!showFacilityDropdown)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-brand-border bg-brand-bg/50 hover:bg-brand-border/30 text-brand-text font-medium text-sm transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-brand-border bg-brand-bg/50 hover:bg-brand-border/30 text-brand-text font-medium text-xs sm:text-sm transition-colors"
           >
-            <Building2 className="w-4 h-4 text-brand-accent" />
-            <span>{selectedFacility}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-brand-textSec" />
+            <Building2 className="w-3.5 h-3.5 text-brand-accent" />
+            <span className="truncate max-w-[100px] sm:max-w-none">{selectedFacility}</span>
+            <ChevronDown className="w-3 h-3 text-brand-textSec" />
           </button>
           
           {showFacilityDropdown && (
@@ -78,62 +89,75 @@ const TopNavbar = ({ sidebarCollapsed }) => {
         </div>
 
         {/* Live Monitoring Badge */}
-        <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full border border-brand-danger/20 bg-brand-danger/5 text-brand-danger text-[11px] font-semibold tracking-wider uppercase">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-danger opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-danger"></span>
+        <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full border border-brand-success/20 bg-brand-success/5 text-brand-success text-[10px] font-semibold tracking-wider uppercase">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-success opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand-success"></span>
           </span>
           Live Monitoring
         </div>
       </div>
 
       {/* Right Side: Clock, Search, Actions */}
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-3 sm:gap-5">
         {/* Digital Clock */}
-        <div className="hidden md:flex flex-col text-right font-mono select-none">
+        <div className="hidden xl:flex flex-col text-right font-mono select-none">
           <span className="text-[13px] font-semibold text-brand-text leading-tight">{formatTime(time)}</span>
           <span className="text-[10px] font-medium text-brand-textSec tracking-wide">{formatDate(time)}</span>
         </div>
 
-        <div className="h-6 w-px bg-brand-border hidden md:block" />
+        <div className="h-6 w-px bg-brand-border hidden xl:block" />
 
         {/* Search Bar */}
-        <div className="relative max-w-xs hidden sm:block">
+        <div className="relative max-w-xs hidden md:block">
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-brand-textSec" />
           <input 
             type="text" 
-            placeholder="Search telemetry..."
-            className="w-48 lg:w-60 pl-9 pr-3 py-1.5 rounded-lg border border-brand-border bg-brand-bg/50 focus:bg-brand-bg focus:border-brand-accent text-brand-text text-sm placeholder-brand-textSec/50 focus:outline-none transition-all"
+            placeholder="Search platform..."
+            className="w-40 lg:w-48 xl:w-56 pl-9 pr-3 py-1.5 rounded-lg border border-brand-border bg-brand-bg/50 focus:bg-brand-bg focus:border-brand-accent text-brand-text text-xs sm:text-sm placeholder-brand-textSec/50 focus:outline-none transition-all"
           />
         </div>
 
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-lg border border-brand-border hover:bg-brand-border/30 text-brand-textSec hover:text-brand-text transition-colors"
+          className="p-1.5 sm:p-2 rounded-lg border border-brand-border hover:bg-brand-border/30 text-brand-textSec hover:text-brand-text transition-colors"
           title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
           {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
 
         {/* Notifications */}
-        <button className="p-2 rounded-lg border border-brand-border hover:bg-brand-border/30 text-brand-textSec hover:text-brand-text relative transition-colors">
+        <button 
+          onClick={onNotificationsClick}
+          className="p-1.5 sm:p-2 rounded-lg border border-brand-border hover:bg-brand-border/30 text-brand-textSec hover:text-brand-text relative transition-colors"
+          title="Notifications"
+        >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-danger"></span>
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-brand-danger"></span>
         </button>
 
-        <div className="h-6 w-px bg-brand-border" />
+        {/* Help Circle */}
+        <button 
+          onClick={onHelpClick}
+          className="p-1.5 sm:p-2 rounded-lg border border-brand-border hover:bg-brand-border/30 text-brand-textSec hover:text-brand-text transition-colors"
+          title="Help & Documentation"
+        >
+          <HelpCircle className="w-4 h-4" />
+        </button>
 
-        {/* User Profile */}
-        <div className="flex items-center gap-2 cursor-pointer">
+        <div className="h-6 w-px bg-brand-border hidden sm:block" />
+
+        {/* User Profile Info */}
+        <div className="flex items-center gap-2">
           <img 
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" 
+            src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=128&auto=format&fit=crop" 
             alt="Profile"
             className="w-8 h-8 rounded-lg border border-brand-border object-cover bg-brand-card"
           />
           <div className="hidden lg:flex flex-col text-left">
             <span className="text-xs font-semibold text-brand-text">Sarah Jenkins</span>
-            <span className="text-[10px] text-brand-textSec font-medium">Ops Commander</span>
+            <span className="text-[9px] text-brand-textSec font-medium">Facility Manager</span>
           </div>
         </div>
       </div>
