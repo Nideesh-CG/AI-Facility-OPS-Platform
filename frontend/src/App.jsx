@@ -65,12 +65,14 @@ import mockData from './data/mockData.json';
 
 // Pages & Modals
 import AIAgents from './pages/AIAgents';
+import GetStarted from './pages/GetStarted';
 import AddModuleModal from './components/AddModuleModal';
 import AskAIDrawer from './components/AskAIDrawer';
 import OrchestrationModal from './components/OrchestrationModal';
 import AgentDetailsModal from './components/AgentDetailsModal';
 
 const AppContent = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('ai-agents'); // Active by default
   const [isLoading, setIsLoading] = useState(true);
@@ -189,7 +191,24 @@ const AppContent = () => {
 
   const handleLogout = () => {
     triggerToast("Logging out... Session terminated safely.");
+    setTimeout(() => {
+      setIsLoggedIn(false);
+    }, 850);
   };
+
+  if (!isLoggedIn) {
+    return (
+      <>
+        {toastMessage && (
+          <div className="fixed bottom-5 right-5 z-50 bg-brand-accent text-white px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 border border-white/10 animate-bounce">
+            <CheckCircle className="w-4 h-4" />
+            <span className="text-xs font-semibold">{toastMessage}</span>
+          </div>
+        )}
+        <GetStarted onGetStarted={() => setIsLoggedIn(true)} triggerToast={triggerToast} />
+      </>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text flex transition-all duration-300">
