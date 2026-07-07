@@ -224,7 +224,7 @@ const GetStarted = ({ onGetStarted, triggerToast }) => {
         {/* 5. Center Bottom Security alert */}
         <section className="w-full max-w-lg mx-auto">
           <div className="py-2.5 px-4 rounded-2xl bg-indigo-50/50 dark:bg-slate-800/30 border border-indigo-100/40 dark:border-white/5 flex items-center justify-center gap-2 text-center text-[11px] text-slate-600 dark:text-slate-300">
-            <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-indigo-600 shrink-0" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 24 24" className="w-5 h-5 text-indigo-600 shrink-0" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M9 11l2 2 4-4" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>

@@ -52,7 +52,7 @@ const TopNavbar = ({ sidebarCollapsed, toggleSidebar, onHelpClick, onNotificatio
           className="p-1.5 rounded-lg border border-brand-border hover:bg-brand-border/30 text-brand-textSec hover:text-brand-text transition-colors"
           title="Toggle Sidebar"
         >
-          <Menu className="w-4.5 h-4.5" />
+          <Menu className="w-5 h-5" />
         </button>
 
         {/* Facility Selector */}

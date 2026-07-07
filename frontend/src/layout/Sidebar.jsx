@@ -82,7 +82,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, activeTab, setActiveTab, onAskAI
                       : 'text-brand-textSec hover:text-brand-text hover:bg-brand-border/30 border border-transparent'
                   }`}
                 >
-                  <Icon className={`w-4.5 h-4.5 shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'scale-110 text-brand-accent' : 'text-brand-textSec'}`} />
+                  <Icon className={`w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'scale-110 text-brand-accent' : 'text-brand-textSec'}`} />
                   {!isCollapsed && (
                     <motion.span 
                       initial={{ opacity: 0 }}
