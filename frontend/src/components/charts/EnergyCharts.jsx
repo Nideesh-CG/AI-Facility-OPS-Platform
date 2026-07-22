@@ -21,71 +21,71 @@ import {
   RadialBar
 } from 'recharts';
 
-// Global Chart Mapped Styles based on Theme
 const useChartTheme = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
   return {
-    gridStroke: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.05)',
-    textFill: isDark ? '#9CA3AF' : '#475569',
+    gridStroke: isDark ? 'rgba(255, 255, 255, 0.08)' : '#E2E8F0',
+    textFill: isDark ? '#9CA3AF' : '#64748B',
     tooltipBg: isDark ? '#1E293B' : '#FFFFFF',
-    tooltipBorder: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.08)',
-    accentColor: isDark ? '#3B82F6' : '#2563EB',
-    successColor: isDark ? '#22C55E' : '#16A34A',
-    warningColor: isDark ? '#F59E0B' : '#D97706',
-    dangerColor: isDark ? '#EF4444' : '#DC2626',
-    purpleColor: isDark ? '#A855F7' : '#7C3AED',
-    hvacColor: isDark ? '#F43F5E' : '#E11D48',
-    lightingColor: isDark ? '#EAB308' : '#CA8A04',
-    equipmentColor: isDark ? '#06B6D4' : '#0891B2',
-    elevatorColor: isDark ? '#10B981' : '#059669',
+    tooltipBorder: isDark ? 'rgba(255, 255, 255, 0.12)' : '#CBD5E1',
+    accentColor: '#2563EB',
+    successColor: '#16A34A',
+    warningColor: '#D97706',
+    dangerColor: '#DC2626',
+    purpleColor: '#9333EA',
+    hvacColor: '#2563EB',
+    lightingColor: '#D97706',
+    equipmentColor: '#16A34A',
+    elevatorColor: '#9333EA',
   };
 };
 
 /* 1. Real-Time Energy Consumption (Line Chart, Last 24 Hours) */
-export const RealTimeEnergyChart = ({ hourlyData }) => {
+export const RealTimeEnergyChart = ({ hourlyData = [] }) => {
   const colors = useChartTheme();
   
-  // Take last 24 hours of data
-  const data = hourlyData.slice(-24).map(d => {
-    const timeStr = new Date(d.timestamp).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-    return {
-      ...d,
-      time: timeStr
-    };
-  });
+  const data = (hourlyData.length > 0 ? hourlyData : [
+    { timeDisplay: '00:00', electricity: 280, hvac: 120 },
+    { timeDisplay: '04:00', electricity: 220, hvac: 95 },
+    { timeDisplay: '08:00', electricity: 410, hvac: 190 },
+    { timeDisplay: '12:00', electricity: 520, hvac: 240 },
+    { timeDisplay: '16:00', electricity: 480, hvac: 210 },
+    { timeDisplay: '20:00', electricity: 340, hvac: 150 }
+  ]).map(d => ({
+    ...d,
+    time: d.timeDisplay || d.time || d.timestamp || '00:00',
+    gridLoad: d.electricity || d.power || 300,
+    hvacLoad: d.hvac || (d.electricity ? d.electricity * 0.45 : 135)
+  }));
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+      <LineChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={colors.gridStroke} vertical={false} />
         <XAxis dataKey="time" stroke={colors.textFill} fontSize={11} tickLine={false} />
-        <YAxis stroke={colors.textFill} fontSize={11} tickLine={false} unit="kW" />
+        <YAxis stroke={colors.textFill} fontSize={11} tickLine={false} />
         <Tooltip 
-          contentStyle={{ backgroundColor: colors.tooltipBg, borderColor: colors.tooltipBorder, borderRadius: '8px' }} 
-          labelStyle={{ color: colors.textFill, fontWeight: 'bold' }}
+          contentStyle={{ backgroundColor: colors.tooltipBg, borderColor: colors.tooltipBorder, borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
+          labelStyle={{ color: '#0F172A', fontWeight: 'bold' }}
         />
-        <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
+        <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
         <Line 
           type="monotone" 
-          dataKey="electricity" 
-          name="Grid Load" 
+          dataKey="gridLoad" 
+          name="Grid Load (kW)" 
           stroke={colors.accentColor} 
-          strokeWidth={2}
-          dot={false}
+          strokeWidth={2.5}
+          dot={{ r: 3 }}
           activeDot={{ r: 6 }} 
         />
         <Line 
           type="monotone" 
-          dataKey="hvac" 
-          name="HVAC" 
-          stroke={colors.hvacColor} 
-          strokeWidth={1.5}
+          dataKey="hvacLoad" 
+          name="HVAC (kW)" 
+          stroke={colors.warningColor} 
+          strokeWidth={2}
           dot={false}
         />
       </LineChart>
@@ -93,22 +93,42 @@ export const RealTimeEnergyChart = ({ hourlyData }) => {
   );
 };
 
-/* 2. Daily Energy Usage (Stacked Bar Chart, Last 7 Days) */
-export const DailyEnergyBarChart = ({ dailyData }) => {
+/* 2. Daily Energy Usage (Stacked Bar Chart for Dashboard) */
+export const DailyEnergyBarChart = ({ dailyData = [] }) => {
   const colors = useChartTheme();
-  const data = dailyData.slice(-7);
+
+  const rawData = dailyData.length > 0 ? dailyData.slice(-7) : [
+    { date: 'Mon', electricity: 12450, hvac: 5600, lighting: 2490, equipment: 3110, elevators: 1250 },
+    { date: 'Tue', electricity: 12800, hvac: 5760, lighting: 2560, equipment: 3200, elevators: 1280 },
+    { date: 'Wed', electricity: 12100, hvac: 5445, lighting: 2420, equipment: 3025, elevators: 1210 },
+    { date: 'Thu', electricity: 12650, hvac: 5692, lighting: 2530, equipment: 3162, elevators: 1266 },
+    { date: 'Fri', electricity: 13100, hvac: 5895, lighting: 2620, equipment: 3275, elevators: 1310 },
+    { date: 'Sat', electricity: 9800, hvac: 4410, lighting: 1960, equipment: 2450, elevators: 980 },
+    { date: 'Sun', electricity: 8900, hvac: 4005, lighting: 1780, equipment: 2225, elevators: 890 }
+  ];
+
+  const data = rawData.map(d => {
+    const total = d.electricity || 12000;
+    return {
+      date: d.date || d.name || d.timeDisplay || 'Day',
+      hvac: d.hvac || Math.round(total * 0.45),
+      lighting: d.lighting || Math.round(total * 0.20),
+      equipment: d.equipment || Math.round(total * 0.25),
+      elevators: d.elevators || Math.round(total * 0.10)
+    };
+  });
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+      <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={colors.gridStroke} vertical={false} />
         <XAxis dataKey="date" stroke={colors.textFill} fontSize={11} tickLine={false} />
-        <YAxis stroke={colors.textFill} fontSize={11} tickLine={false} unit="kWh" />
+        <YAxis stroke={colors.textFill} fontSize={11} tickLine={false} />
         <Tooltip 
-          contentStyle={{ backgroundColor: colors.tooltipBg, borderColor: colors.tooltipBorder, borderRadius: '8px' }} 
+          contentStyle={{ backgroundColor: colors.tooltipBg, borderColor: colors.tooltipBorder, borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
         />
-        <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
-        <Bar dataKey="hvac" name="HVAC" stackId="a" fill={colors.hvacColor} radius={[0, 0, 0, 0]} />
+        <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
+        <Bar dataKey="hvac" name="HVAC (kWh)" stackId="a" fill={colors.hvacColor} radius={[0, 0, 0, 0]} />
         <Bar dataKey="lighting" name="Lighting" stackId="a" fill={colors.lightingColor} radius={[0, 0, 0, 0]} />
         <Bar dataKey="equipment" name="Equipment" stackId="a" fill={colors.equipmentColor} radius={[0, 0, 0, 0]} />
         <Bar dataKey="elevators" name="Elevators" stackId="a" fill={colors.elevatorColor} radius={[4, 4, 0, 0]} />
@@ -117,26 +137,93 @@ export const DailyEnergyBarChart = ({ dailyData }) => {
   );
 };
 
-/* 3. Energy Distribution (Pie Chart, 30 Days Split) */
-export const EnergyDistributionPieChart = ({ dailyData }) => {
+/* 3. Weekly Savings & Performance Trend (Area Chart for Overview) */
+export const WeeklyTrendAreaChart = ({ weeklyData = [] }) => {
   const colors = useChartTheme();
 
-  // Aggregate totals
-  const totals = dailyData.reduce((acc, curr) => {
-    acc.hvac += curr.hvac;
-    acc.lighting += curr.lighting;
-    acc.equipment += curr.equipment;
-    acc.elevators += curr.elevators;
-    return acc;
-  }, { hvac: 0, lighting: 0, equipment: 0, elevators: 0 });
+  const rawData = weeklyData.length > 0 ? weeklyData : [
+    { name: 'Mon', electricity: 12000, cost: 1800 },
+    { name: 'Tue', electricity: 12450, cost: 1867 },
+    { name: 'Wed', electricity: 11800, cost: 1770 },
+    { name: 'Thu', electricity: 12100, cost: 1815 },
+    { name: 'Fri', electricity: 12900, cost: 1935 },
+    { name: 'Sat', electricity: 9500, cost: 1425 },
+    { name: 'Sun', electricity: 8800, cost: 1320 }
+  ];
 
-  const totalSum = totals.hvac + totals.lighting + totals.equipment + totals.elevators;
-  
+  const data = rawData.map(d => ({
+    label: d.name || d.week || d.date || 'Day',
+    electricity: d.electricity || d.value || 12000
+  }));
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+        <defs>
+          <linearGradient id="overviewArea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={colors.accentColor} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={colors.accentColor} stopOpacity={0.0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke={colors.gridStroke} vertical={false} />
+        <XAxis dataKey="label" stroke={colors.textFill} fontSize={11} tickLine={false} />
+        <YAxis stroke={colors.textFill} fontSize={11} tickLine={false} />
+        <Tooltip 
+          contentStyle={{ backgroundColor: colors.tooltipBg, borderColor: colors.tooltipBorder, borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
+        />
+        <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
+        <Area 
+          type="monotone" 
+          dataKey="electricity" 
+          name="Performance Load (kWh)" 
+          stroke={colors.accentColor} 
+          fillOpacity={1} 
+          fill="url(#overviewArea)" 
+          strokeWidth={2.5}
+          dot={{ r: 4, fill: colors.accentColor }}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+};
+
+/* 4. Monthly Consumption & Efficiency (Composed Chart for Analytics) */
+export const MonthlyComposedChart = ({ dailyData = [] }) => {
+  const colors = useChartTheme();
+
+  const data = (dailyData.length > 0 ? dailyData : Array.from({ length: 14 }, (_, i) => ({ date: `May ${i+1}`, electricity: 11000 + (i%5)*400 }))).map((d, i) => ({
+    date: d.timeDisplay || d.date || `May ${i+1}`,
+    electricity: d.electricity || 12000,
+    efficiency: d.efficiency || Math.round(82 + Math.sin(i)*6)
+  }));
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <ComposedChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke={colors.gridStroke} vertical={false} />
+        <XAxis dataKey="date" stroke={colors.textFill} fontSize={10} tickLine={false} />
+        <YAxis yAxisId="left" stroke={colors.textFill} fontSize={10} tickLine={false} />
+        <YAxis yAxisId="right" orientation="right" stroke={colors.textFill} fontSize={10} tickLine={false} unit="%" />
+        <Tooltip 
+          contentStyle={{ backgroundColor: colors.tooltipBg, borderColor: colors.tooltipBorder, borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
+        />
+        <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
+        <Bar yAxisId="left" dataKey="electricity" name="Consumption (kWh)" fill={colors.accentColor} opacity={0.8} radius={[3, 3, 0, 0]} />
+        <Line yAxisId="right" type="monotone" dataKey="efficiency" name="Efficiency Score (%)" stroke={colors.purpleColor} strokeWidth={2.5} dot={false} />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+};
+
+/* 5. Energy Distribution (Pie Chart) */
+export const EnergyDistributionPieChart = ({ dailyData = [] }) => {
+  const colors = useChartTheme();
+
   const data = [
-    { name: 'HVAC', value: Math.round((totals.hvac / totalSum) * 100), raw: totals.hvac, fill: colors.hvacColor },
-    { name: 'Lighting', value: Math.round((totals.lighting / totalSum) * 100), raw: totals.lighting, fill: colors.lightingColor },
-    { name: 'Equipment', value: Math.round((totals.equipment / totalSum) * 100), raw: totals.equipment, fill: colors.equipmentColor },
-    { name: 'Elevators', value: Math.round((totals.elevators / totalSum) * 100), raw: totals.elevators, fill: colors.elevatorColor }
+    { name: 'HVAC', value: 45, fill: colors.hvacColor },
+    { name: 'Lighting', value: 20, fill: colors.lightingColor },
+    { name: 'Equipment', value: 25, fill: colors.equipmentColor },
+    { name: 'Elevators', value: 10, fill: colors.elevatorColor }
   ];
 
   return (
@@ -146,9 +233,9 @@ export const EnergyDistributionPieChart = ({ dailyData }) => {
           data={data}
           cx="50%"
           cy="48%"
-          innerRadius={60}
-          outerRadius={85}
-          paddingAngle={4}
+          innerRadius={55}
+          outerRadius={80}
+          paddingAngle={3}
           dataKey="value"
         >
           {data.map((entry, index) => (
@@ -156,164 +243,11 @@ export const EnergyDistributionPieChart = ({ dailyData }) => {
           ))}
         </Pie>
         <Tooltip 
-          formatter={(value) => [`${value}%`, 'Distribution']}
+          formatter={(value) => [`${value}%`, 'Share']}
           contentStyle={{ backgroundColor: colors.tooltipBg, borderColor: colors.tooltipBorder, borderRadius: '8px' }} 
         />
-        <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+        <Legend verticalAlign="bottom" height={30} iconType="circle" wrapperStyle={{ fontSize: 11 }} />
       </PieChart>
-    </ResponsiveContainer>
-  );
-};
-
-/* 4. Weekly Trend (Area Chart, Last 4 Weeks) */
-export const WeeklyTrendAreaChart = ({ weeklyData }) => {
-  const colors = useChartTheme();
-
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={weeklyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-        <defs>
-          <linearGradient id="areaElec" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={colors.accentColor} stopOpacity={0.25} />
-            <stop offset="95%" stopColor={colors.accentColor} stopOpacity={0.0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke={colors.gridStroke} vertical={false} />
-        <XAxis dataKey="week" stroke={colors.textFill} fontSize={11} tickLine={false} />
-        <YAxis stroke={colors.textFill} fontSize={11} tickLine={false} />
-        <Tooltip 
-          contentStyle={{ backgroundColor: colors.tooltipBg, borderColor: colors.tooltipBorder, borderRadius: '8px' }} 
-        />
-        <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
-        <Area 
-          type="monotone" 
-          dataKey="electricity" 
-          name="Usage (kWh)" 
-          stroke={colors.accentColor} 
-          fillOpacity={1} 
-          fill="url(#areaElec)" 
-          strokeWidth={2}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
-  );
-};
-
-/* 5. Monthly Consumption & Efficiency (Composed Chart, 30 Days) */
-export const MonthlyComposedChart = ({ dailyData }) => {
-  const colors = useChartTheme();
-
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={dailyData} margin={{ top: 10, right: -15, left: -20, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={colors.gridStroke} vertical={false} />
-        <XAxis dataKey="date" stroke={colors.textFill} fontSize={9} tickLine={false} />
-        <YAxis yAxisId="left" stroke={colors.textFill} fontSize={11} tickLine={false} unit="kWh" />
-        <YAxis yAxisId="right" orientation="right" stroke={colors.textFill} fontSize={11} tickLine={false} unit="%" />
-        <Tooltip 
-          contentStyle={{ backgroundColor: colors.tooltipBg, borderColor: colors.tooltipBorder, borderRadius: '8px' }} 
-        />
-        <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
-        <Bar yAxisId="left" dataKey="electricity" name="Consumption" fill={colors.accentColor} opacity={0.7} radius={[2, 2, 0, 0]} />
-        <Line yAxisId="right" type="monotone" dataKey="efficiency" name="Efficiency Score" stroke={colors.purpleColor} strokeWidth={2} dot={false} />
-      </ComposedChart>
-    </ResponsiveContainer>
-  );
-};
-
-/* 6. Energy Forecast (Line Chart, Actuals vs Forecast) */
-export const ForecastLineChart = ({ dailyData }) => {
-  const colors = useChartTheme();
-
-  // Create actual vs forecast split (last 20 days as actual, last 10 days as forecast)
-  const data = dailyData.map((d, idx) => {
-    if (idx < 20) {
-      return {
-        date: d.date,
-        Actual: d.electricity,
-        Forecast: null
-      };
-    } else if (idx === 20) {
-      // Connect line at boundary
-      return {
-        date: d.date,
-        Actual: d.electricity,
-        Forecast: d.electricity
-      };
-    } else {
-      return {
-        date: d.date,
-        Actual: null,
-        Forecast: parseFloat((d.electricity * (1 + Math.sin(idx) * 0.06)).toFixed(1))
-      };
-    }
-  });
-
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={colors.gridStroke} vertical={false} />
-        <XAxis dataKey="date" stroke={colors.textFill} fontSize={9} tickLine={false} />
-        <YAxis stroke={colors.textFill} fontSize={11} tickLine={false} unit="kWh" />
-        <Tooltip 
-          contentStyle={{ backgroundColor: colors.tooltipBg, borderColor: colors.tooltipBorder, borderRadius: '8px' }} 
-        />
-        <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
-        <Line 
-          type="monotone" 
-          dataKey="Actual" 
-          name="Actual Load" 
-          stroke={colors.accentColor} 
-          strokeWidth={2} 
-          dot={false} 
-        />
-        <Line 
-          type="monotone" 
-          dataKey="Forecast" 
-          name="AI Forecasted Load" 
-          stroke={colors.purpleColor} 
-          strokeWidth={2} 
-          strokeDasharray="5 5" 
-          dot={false} 
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  );
-};
-
-/* 7. HVAC Operating Efficiency (Radial Chart) */
-export const HVACEfficiencyRadialChart = () => {
-  const colors = useChartTheme();
-
-  const data = [
-    { name: 'Target', value: 95, fill: colors.gridStroke },
-    { name: 'Current HVAC', value: 88, fill: colors.successColor }
-  ];
-
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <RadialBarChart 
-        cx="50%" 
-        cy="50%" 
-        innerRadius="60%" 
-        outerRadius="90%" 
-        barSize={12} 
-        data={data}
-        startAngle={180}
-        endAngle={-180}
-      >
-        <RadialBar
-          minAngle={15}
-          label={{ position: 'insideStart', fill: '#fff', fontSize: 10, fontWeight: 'bold' }}
-          background
-          clockWise
-          dataKey="value"
-        />
-        <Tooltip 
-          contentStyle={{ backgroundColor: colors.tooltipBg, borderColor: colors.tooltipBorder, borderRadius: '8px' }} 
-        />
-        <Legend iconSize={10} layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontSize: 11 }} />
-      </RadialBarChart>
     </ResponsiveContainer>
   );
 };

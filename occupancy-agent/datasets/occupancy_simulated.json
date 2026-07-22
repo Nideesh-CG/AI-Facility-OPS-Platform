@@ -1,0 +1,77 @@
+{
+  "kpi": {
+    "current_occupancy_pct": 73,
+    "occupancy_trend": "+4.2%",
+    "trend_type": "good",
+    "total_capacity": 1500,
+    "current_count": 1095,
+    "peak_hour": "14:00 - 15:00",
+    "air_quality_aqi": 320,
+    "avg_temperature_c": 24.0
+  },
+  "zones": [
+    {
+      "id": "ZONE-F1-LOBBY",
+      "name": "Floor 1 Reception & Lobby",
+      "occupancy_pct": 82,
+      "capacity": 300,
+      "current_occupants": 246,
+      "temp_c": 23.5,
+      "co2_ppm": 420,
+      "aqi": 310
+    },
+    {
+      "id": "ZONE-F2-WORK",
+      "name": "Floor 2 Open Workspace",
+      "occupancy_pct": 73,
+      "capacity": 500,
+      "current_occupants": 365,
+      "temp_c": 24.0,
+      "co2_ppm": 450,
+      "aqi": 325
+    },
+    {
+      "id": "ZONE-F3-EXEC",
+      "name": "Floor 3 Executive Suites",
+      "occupancy_pct": 65,
+      "capacity": 200,
+      "current_occupants": 130,
+      "temp_c": 22.8,
+      "co2_ppm": 390,
+      "aqi": 290
+    },
+    {
+      "id": "ZONE-F4-CONF",
+      "name": "Floor 4 Conference & Event Hall",
+      "occupancy_pct": 88,
+      "capacity": 400,
+      "current_occupants": 352,
+      "temp_c": 24.2,
+      "co2_ppm": 510,
+      "aqi": 340
+    },
+    {
+      "id": "ZONE-B1-UTIL",
+      "name": "Basement Operations & Utility",
+      "occupancy_pct": 15,
+      "capacity": 100,
+      "current_occupants": 15,
+      "temp_c": 21.0,
+      "co2_ppm": 380,
+      "aqi": 280
+    }
+  ],
+  "hourly_occupancy": [
+    {"time": "08:00", "count": 210, "pct": 14},
+    {"time": "09:00", "count": 650, "pct": 43},
+    {"time": "10:00", "count": 980, "pct": 65},
+    {"time": "11:00", "count": 1050, "pct": 70},
+    {"time": "12:00", "count": 920, "pct": 61},
+    {"time": "13:00", "count": 1010, "pct": 67},
+    {"time": "14:00", "count": 1125, "pct": 75},
+    {"time": "15:00", "count": 1095, "pct": 73},
+    {"time": "16:00", "count": 990, "pct": 66},
+    {"time": "17:00", "count": 720, "pct": 48},
+    {"time": "18:00", "count": 310, "pct": 21}
+  ]
+}

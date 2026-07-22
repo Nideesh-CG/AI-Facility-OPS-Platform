@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing & Coverage
+coverage
+
+# Production & Build Output
+dist/
+build/
+*.egg-info/
+
+# Python Cache & Bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+.venv/
+env/
+venv/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE & System Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Microservice Python Cache
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+
+# Large Datasets and Archives (Exceeds GitHub 100MB limits)
+*.zip
+*.csv
+*.joblib
+energy-agent/datasets/archive.zip
+energy-agent/datasets/extracted/

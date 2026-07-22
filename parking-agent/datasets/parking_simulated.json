@@ -1,0 +1,14 @@
+{
+  "summary": {
+    "total_bays": 500,
+    "available_bays": 142,
+    "occupancy_rate_pct": 81.6,
+    "active_ev_chargers": 16,
+    "ev_charging_load_kw": 120.5
+  },
+  "bays": [
+    { "id": "BAY-A1", "zone": "Zone A (Executive)", "status": "Occupied", "vehicle": "Tesla Model S" },
+    { "id": "BAY-A2", "zone": "Zone A (Executive)", "status": "Available", "vehicle": "None" },
+    { "id": "BAY-EV-01", "zone": "EV Charging Station 1", "status": "Charging", "vehicle": "Rivian R1T" }
+  ]
+}

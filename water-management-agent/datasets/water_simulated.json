@@ -1,0 +1,22 @@
+{
+  "summary": {
+    "daily_usage_liters": 12500,
+    "flow_rate_lpm": 42.5,
+    "recycled_water_pct": 35.0,
+    "leak_alerts_resolved": 1,
+    "reservoir_level_pct": 88.5
+  },
+  "meters": [
+    { "id": "MTR-W-01", "name": "Main City Incomer Meter", "location": "Basement B-2", "flowRate": "25.0 L/m", "status": "Normal" },
+    { "id": "MTR-W-02", "name": "HVAC Cooling Tower Loop", "location": "Roof Plant", "flowRate": "12.5 L/m", "status": "Normal" },
+    { "id": "MTR-W-03", "name": "Irrigation & Greywater Meter", "location": "Garden Area", "flowRate": "5.0 L/m", "status": "Eco Cycle" }
+  ],
+  "hourly_flow": [
+    {"time": "00:00", "flow": 12},
+    {"time": "04:00", "flow": 8},
+    {"time": "08:00", "flow": 45},
+    {"time": "12:00", "flow": 62},
+    {"time": "16:00", "flow": 50},
+    {"time": "20:00", "flow": 28}
+  ]
+}

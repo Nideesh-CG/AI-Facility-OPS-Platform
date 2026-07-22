@@ -1,0 +1,146 @@
+{
+  "summary": {
+    "total_assets": 1250,
+    "healthy": 1050,
+    "warning": 120,
+    "critical": 80,
+    "active_work_orders": 8,
+    "completed_this_month": 42
+  },
+  "assets": [
+    {
+      "id": "AC-1021",
+      "name": "AC Unit 1021",
+      "type": "HVAC",
+      "status": "Healthy",
+      "location": "Floor 1",
+      "healthScore": 98.5
+    },
+    {
+      "id": "Lift-1",
+      "name": "Elevator Main Lift 1",
+      "type": "Elevator",
+      "status": "Warning",
+      "location": "Lobby",
+      "healthScore": 74.2
+    },
+    {
+      "id": "Camera-20",
+      "name": "CCTV Dome Camera 20",
+      "type": "CCTV",
+      "status": "Offline",
+      "location": "Floor 2",
+      "healthScore": 45.0
+    },
+    {
+      "id": "Generator",
+      "name": "Backup Generator 500kVA",
+      "type": "Power",
+      "status": "Good",
+      "location": "Basement",
+      "healthScore": 99.1
+    },
+    {
+      "id": "AST-CHILL-A1",
+      "name": "HVAC Plant Chiller A",
+      "type": "HVAC",
+      "status": "Healthy",
+      "location": "Basement Plant Room B-2",
+      "healthScore": 96.8
+    },
+    {
+      "id": "AST-GEN-01",
+      "name": "Primary Transformer",
+      "type": "Power",
+      "status": "Healthy",
+      "location": "Substation Block A",
+      "healthScore": 97.4
+    }
+  ],
+  "work_orders": [
+    {
+      "id": "WO-1001",
+      "asset": "AC unit",
+      "priority": "High",
+      "status": "In Progress",
+      "assignedTo": "John Doe",
+      "dueDate": "12 May",
+      "description": "Inspect cooling coil pressure and refrigerant line"
+    },
+    {
+      "id": "WO-1002",
+      "asset": "Lift-1",
+      "priority": "Medium",
+      "status": "Pending",
+      "assignedTo": "Jane Smith",
+      "dueDate": "13 May",
+      "description": "Recalibrate elevator motor brake cables"
+    },
+    {
+      "id": "WO-1003",
+      "asset": "Camera",
+      "priority": "High",
+      "status": "In Progress",
+      "assignedTo": "Alex Lee",
+      "dueDate": "14 May",
+      "description": "Fix video feed signal latency in Sector B"
+    },
+    {
+      "id": "WO-1004",
+      "asset": "Camera-20",
+      "priority": "Low",
+      "status": "Completed",
+      "assignedTo": "David M.",
+      "dueDate": "10 May",
+      "description": "Reboot PoE switch port and verify IP stream"
+    },
+    {
+      "id": "WO-4921",
+      "asset": "Chiller B plant",
+      "priority": "Critical",
+      "status": "Dispatched",
+      "assignedTo": "Sarah Jenkins",
+      "dueDate": "15 May",
+      "description": "Inspect chiller compressor valve gasket seals"
+    },
+    {
+      "id": "WO-4819",
+      "asset": "Sector G VAV Box",
+      "priority": "Medium",
+      "status": "In Progress",
+      "assignedTo": "Dave R.",
+      "dueDate": "16 May",
+      "description": "Re-calibrate airflow dampers"
+    }
+  ],
+  "schedules": [
+    {
+      "id": "SCH-1",
+      "date": "12 May",
+      "activity": "AC Maintenance",
+      "time": "09:00 AM",
+      "status": "Completed"
+    },
+    {
+      "id": "SCH-2",
+      "date": "13 May",
+      "activity": "Generator Check",
+      "time": "11:00 AM",
+      "status": "Pending"
+    },
+    {
+      "id": "SCH-3",
+      "date": "14 May",
+      "activity": "Lift Inspection",
+      "time": "02:00 PM",
+      "status": "Pending"
+    },
+    {
+      "id": "SCH-4",
+      "date": "15 May",
+      "activity": "Fire Drill",
+      "time": "10:30 AM",
+      "status": "Upcoming"
+    }
+  ]
+}

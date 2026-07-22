@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "total_alerts": 5,
+    "critical": 1,
+    "warning": 2,
+    "info": 2,
+    "active_cctv_cameras": 48,
+    "online_cameras": 47,
+    "access_doors_secured": 32,
+    "security_score": 96.5
+  },
+  "alerts": [
+    {
+      "id": "ALT-001",
+      "title": "Water leakage detected",
+      "location": "Floor 2",
+      "severity": "critical",
+      "timestamp": "2 min ago",
+      "icon": "Droplet"
+    },
+    {
+      "id": "ALT-002",
+      "title": "Elevator malfunction",
+      "location": "Lift-1",
+      "severity": "warning",
+      "timestamp": "5 min ago",
+      "icon": "AlertTriangle"
+    },
+    {
+      "id": "ALT-003",
+      "title": "High energy usage",
+      "location": "Floor 3",
+      "severity": "warning",
+      "timestamp": "10 min ago",
+      "icon": "Zap"
+    },
+    {
+      "id": "ALT-004",
+      "title": "Door left open",
+      "location": "Main Gate",
+      "severity": "low",
+      "timestamp": "15 min ago",
+      "icon": "ShieldAlert"
+    },
+    {
+      "id": "ALT-005",
+      "title": "Security camera offline",
+      "location": "Camera-20 Floor 2",
+      "severity": "low",
+      "timestamp": "30 min ago",
+      "icon": "Camera"
+    }
+  ],
+  "integrations": [
+    {"id": "INT-1", "name": "Google Maps", "type": "GIS & Navigation", "status": "Connected"},
+    {"id": "INT-2", "name": "IoT Sensors", "type": "Telemetry Mesh", "status": "Connected"},
+    {"id": "INT-3", "name": "Email Service", "type": "SMTP Gateway", "status": "Connected"},
+    {"id": "INT-4", "name": "SMS Service", "type": "Twilio Telephony", "status": "Connected"},
+    {"id": "INT-5", "name": "WhatsApp API", "type": "Messenger Bot", "status": "Connected"}
+  ]
+}

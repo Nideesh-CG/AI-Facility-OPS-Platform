@@ -2,39 +2,36 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import Sidebar from './layout/Sidebar';
 import TopNavbar from './layout/TopNavbar';
-import RightPanel from './layout/RightPanel';
 import Footer from './layout/Footer';
 
 // Subcomponents
-import KPICard from './components/cards/KPICard';
 import SensorTable from './components/SensorTable';
-import AlertsSection from './components/AlertsSection';
-import EnergyDistributionProgress from './components/EnergyDistributionProgress';
-import RecommendationPlaceholders from './components/RecommendationPlaceholders';
+
+// Modals & Drawers
+import AIAgents from './pages/AIAgents';
+import GetStarted from './pages/GetStarted';
+import AddModuleModal from './components/AddModuleModal';
+import AddWorkOrderModal from './components/AddWorkOrderModal';
+import AddScheduleModal from './components/AddScheduleModal';
+import AskAIDrawer from './components/AskAIDrawer';
+import OrchestrationModal from './components/OrchestrationModal';
+import AgentDetailsModal from './components/AgentDetailsModal';
 
 // Charts
 import {
   RealTimeEnergyChart,
   DailyEnergyBarChart,
-  EnergyDistributionPieChart,
   WeeklyTrendAreaChart,
-  MonthlyComposedChart,
-  ForecastLineChart,
-  HVACEfficiencyRadialChart
+  MonthlyComposedChart
 } from './components/charts/EnergyCharts';
 
 // Icons
 import {
   Zap,
-  Gauge,
   DollarSign,
   Activity,
-  Leaf,
-  Flame,
-  Sun,
   Droplet,
   TrendingUp,
-  PiggyBank,
   FileText,
   Download,
   CheckCircle,
@@ -44,52 +41,155 @@ import {
   Wrench,
   Users,
   Shield,
-  HelpCircle,
-  Settings as SettingsIcon,
   Compass,
-  ArrowRight,
   ClipboardList,
   Database,
   Link,
   Plus,
   RefreshCw,
-  Clock,
   Briefcase,
   Layers,
-  Sparkles,
-  Server
+  Search,
+  Lock,
+  User,
+  Globe,
+  Sliders as SlidersIcon,
+  BellRing,
+  AlertTriangle,
+  Check,
+  ChevronRight,
+  MapPin,
+  Clock,
+  Eye,
+  Trash2,
+  CheckSquare
 } from 'lucide-react';
-
-// Static Import Mock Data
-import mockData from './data/mockData.json';
-
-// Pages & Modals
-import AIAgents from './pages/AIAgents';
-import GetStarted from './pages/GetStarted';
-import AddModuleModal from './components/AddModuleModal';
-import AskAIDrawer from './components/AskAIDrawer';
-import OrchestrationModal from './components/OrchestrationModal';
-import AgentDetailsModal from './components/AgentDetailsModal';
 
 const AppContent = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState('ai-agents'); // Active by default
+  const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState('');
   
-  // Modals & Overlays State
+  // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isAskAIDrawerOpen, setIsAskAIDrawerOpen] = useState(false);
   const [isOrchestrationModalOpen, setIsOrchestrationModalOpen] = useState(false);
   const [selectedAgentDetails, setSelectedAgentDetails] = useState(null);
 
-  // Simulate initial data load for skeleton loaders
+  // Shared Agent Setpoints Config State
+  const [agentConfigs, setAgentConfigs] = useState({
+    energy: { hvacCop: 4.2, peakTariff: 0.18, ecoLimit: 80 },
+    maintenance: { vibThreshold: 2.5, inspectInterval: 7, riskSensitivity: 'Medium' },
+    occupancy: { targetTemp: 22.5, airflowCfm: 25, maxDensity: 85 },
+    security: { motionSensitivity: 75, securityMode: 'Standard' },
+    cleaning: { sanitizationFreq: 4, trafficTrigger: 150 },
+    parking: { evTariff: 0.25, reservedBaysPct: 25 },
+    water: { leakThreshold: 5.0, recycledWaterGoal: 35 }
+  });
+
+  // Work Orders state
+  const [workOrdersList, setWorkOrdersList] = useState([
+    { id: 'WO-1001', asset: 'AC unit', priority: 'High', status: 'In Progress', assignedTo: 'John Doe', dueDate: '12 May' },
+    { id: 'WO-1002', asset: 'Lift-1', priority: 'Medium', status: 'Pending', assignedTo: 'Jane Smith', dueDate: '13 May' },
+    { id: 'WO-1003', asset: 'Camera', priority: 'High', status: 'In Progress', assignedTo: 'Alex Lee', dueDate: '14 May' },
+    { id: 'WO-1004', asset: 'Camera-20', priority: 'Low', status: 'Completed', assignedTo: 'David M.', dueDate: '10 May' }
+  ]);
+
+  // Schedules state
+  const [schedulesList, setSchedulesList] = useState([
+    { id: 'SCH-1', date: '12 May', activity: 'AC Maintenance', time: '09:00 AM', status: 'Completed' },
+    { id: 'SCH-2', date: '13 May', activity: 'Generator Check', time: '11:00 AM', status: 'Pending' },
+    { id: 'SCH-3', date: '14 May', activity: 'Lift Inspection', time: '02:00 PM', status: 'Pending' },
+    { id: 'SCH-4', date: '15 May', activity: 'Fire Drill', time: '10:30 AM', status: 'Upcoming' }
+  ]);
+
+  // Alerts state
+  const [alertsList, setAlertsList] = useState([
+    { id: 'ALT-01', title: 'Water leakage detected', location: 'Floor 2', severity: 'critical', time: '2 min ago' },
+    { id: 'ALT-02', title: 'Elevator malfunction', location: 'Lift-1', severity: 'warning', time: '5 min ago' },
+    { id: 'ALT-03', title: 'High energy usage', location: 'Floor 3', severity: 'warning', time: '10 min ago' },
+    { id: 'ALT-04', title: 'Door left open', location: 'Main Gate', severity: 'info', time: '15 min ago' }
+  ]);
+
+  // Settings State
+  const [profileName, setProfileName] = useState('Sarah Jenkins');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+
+  const [woSearch, setWoSearch] = useState('');
+  const [woStatusFilter, setWoStatusFilter] = useState('All');
+  const [woPriorityFilter, setWoPriorityFilter] = useState('All');
+
+  // Live Streaming Telemetry Data State
+  const [apiData, setApiData] = useState({
+    kpis: { totalEnergy: { value: 12450 } },
+    charts: {
+      hourlyEnergyData: Array.from({ length: 24 }, (_, i) => ({ timeDisplay: `${i}:00`, electricity: 300 + (i%5)*20, hvac: 130 + (i%3)*15 })),
+      dailyEnergyData: [
+        { date: 'Mon', electricity: 12450, hvac: 5600, lighting: 2490, equipment: 3110, elevators: 1250 },
+        { date: 'Tue', electricity: 12800, hvac: 5760, lighting: 2560, equipment: 3200, elevators: 1280 },
+        { date: 'Wed', electricity: 12100, hvac: 5445, lighting: 2420, equipment: 3025, elevators: 1210 },
+        { date: 'Thu', electricity: 12650, hvac: 5692, lighting: 2530, equipment: 3162, elevators: 1266 },
+        { date: 'Fri', electricity: 13100, hvac: 5895, lighting: 2620, equipment: 3275, elevators: 1310 },
+        { date: 'Sat', electricity: 9800, hvac: 4410, lighting: 1960, equipment: 2450, elevators: 980 },
+        { date: 'Sun', electricity: 8900, hvac: 4005, lighting: 1780, equipment: 2225, elevators: 890 }
+      ]
+    },
+    overview: {
+      weekly_savings_trend: [
+        { name: 'Mon', electricity: 12000 },
+        { name: 'Tue', electricity: 12450 },
+        { name: 'Wed', electricity: 11800 },
+        { name: 'Thu', electricity: 12100 },
+        { name: 'Fri', electricity: 12900 },
+        { name: 'Sat', electricity: 9500 },
+        { name: 'Sun', electricity: 8800 }
+      ]
+    }
+  });
+
+  // Real-Time Live Pulse Loop
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-    return () => clearTimeout(timer);
+    setIsLoading(false);
+
+    const interval = setInterval(() => {
+      setApiData(prev => {
+        const updatedWeekly = prev.overview.weekly_savings_trend.map(item => ({
+          ...item,
+          electricity: Math.max(8000, Math.round(item.electricity + (Math.random() - 0.5) * 200))
+        }));
+
+        const updatedDaily = prev.charts.dailyEnergyData.map(item => {
+          const newTotal = Math.max(8000, Math.round(item.electricity + (Math.random() - 0.5) * 300));
+          return {
+            ...item,
+            electricity: newTotal,
+            hvac: Math.round(newTotal * 0.45),
+            lighting: Math.round(newTotal * 0.20),
+            equipment: Math.round(newTotal * 0.25),
+            elevators: Math.round(newTotal * 0.10)
+          };
+        });
+
+        return {
+          ...prev,
+          charts: {
+            ...prev.charts,
+            dailyEnergyData: updatedDaily
+          },
+          overview: {
+            ...prev.overview,
+            weekly_savings_trend: updatedWeekly
+          }
+        };
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const triggerToast = (msg) => {
@@ -97,130 +197,107 @@ const AppContent = () => {
     setTimeout(() => setToastMessage(''), 3000);
   };
 
-  // Helper variables derived from mockData
-  const latestHour = mockData.hourlyEnergyData[mockData.hourlyEnergyData.length - 1];
-  const latestDay = mockData.dailyEnergyData[mockData.dailyEnergyData.length - 1];
+  const handleApplyAgentConfig = (agentId, newParams) => {
+    setAgentConfigs(prev => ({
+      ...prev,
+      [agentId]: newParams
+    }));
+  };
 
-  // Calculations for KPI Cards
-  const stats = useMemo(() => {
-    const totalEnergy = mockData.dailyEnergyData.reduce((acc, curr) => acc + curr.electricity, 0);
-    const totalCarbon = mockData.dailyEnergyData.reduce((acc, curr) => acc + curr.carbon, 0) / 1000;
-    const totalCost = mockData.dailyEnergyData.reduce((acc, curr) => acc + curr.cost, 0);
-    const savings = totalCost * 0.15; // 15% estimated savings vs baseline
+  const handleAddNewWorkOrder = (newWo) => {
+    const updated = [{ id: `WO-${workOrdersList.length + 1005}`, ...newWo }, ...workOrdersList];
+    setWorkOrdersList(updated);
+    triggerToast(`Work Order #${updated[0].id} created!`);
+  };
 
-    return {
-      totalEnergy,
-      currentPower: latestHour.electricity,
-      todayCost: latestDay.cost,
-      efficiency: latestHour.efficiency,
-      carbon: totalCarbon,
-      hvac: latestHour.hvac,
-      lighting: latestHour.lighting,
-      water: latestHour.water,
-      peakDemand: latestDay.peakDemand,
-      savings
-    };
-  }, [latestHour, latestDay]);
+  const handleAddNewSchedule = (newSched) => {
+    const updated = [{ id: `SCH-${schedulesList.length + 1}`, ...newSched }, ...schedulesList];
+    setSchedulesList(updated);
+    triggerToast(`Schedule added for ${newSched.date}!`);
+  };
 
-  // Formatter functions
-  const formatKWh = (val) => `${Math.round(val).toLocaleString()}`;
-  const formatUSD = (val) => `$${Math.round(val).toLocaleString()}`;
-  const formatTons = (val) => `${val.toFixed(1)}`;
-  const formatPercent = (val) => `${val.toFixed(1)}%`;
-  const formatKW = (val) => `${val.toFixed(1)}`;
-  const formatLiters = (val) => `${Math.round(val).toLocaleString()}`;
+  const toggleWorkOrderStatus = (id) => {
+    setWorkOrdersList(prev => prev.map(wo => {
+      if (wo.id === id) {
+        const nextStatus = wo.status === 'Pending' ? 'In Progress' : wo.status === 'In Progress' ? 'Completed' : 'Pending';
+        triggerToast(`Ticket ${id} status set to ${nextStatus}`);
+        return { ...wo, status: nextStatus };
+      }
+      return wo;
+    }));
+  };
 
-  // KPI Configurations for energy tab
-  const kpis = [
-    {
-      label: "Total Energy Consumption",
-      value: stats.totalEnergy,
-      unit: "kWh",
-      trend: "-3.2%",
-      trendType: "good",
-      icon: Zap,
-      sparkline: mockData.dailyEnergyData.slice(-10).map(d => d.electricity),
-      formatter: formatKWh
-    },
-    {
-      label: "Current Power Usage",
-      value: stats.currentPower,
-      unit: "kW",
-      trend: "+1.5%",
-      trendType: "bad",
-      icon: Gauge,
-      sparkline: mockData.hourlyEnergyData.slice(-12).map(h => h.electricity),
-      formatter: formatKW
-    },
-    {
-      label: "Today's Cost",
-      value: stats.todayCost,
-      unit: "USD",
-      trend: "-4.1%",
-      trendType: "good",
-      icon: DollarSign,
-      sparkline: mockData.dailyEnergyData.slice(-10).map(d => d.cost),
-      formatter: formatUSD
-    },
-    {
-      label: "Efficiency Score",
-      value: stats.efficiency,
-      unit: "%",
-      trend: "+0.8%",
-      trendType: "good",
-      icon: Activity,
-      sparkline: mockData.hourlyEnergyData.slice(-12).map(h => h.efficiency),
-      formatter: formatPercent
-    },
-    {
-      label: "Carbon Emission",
-      value: stats.carbon,
-      unit: "Tons",
-      trend: "-3.5%",
-      trendType: "good",
-      icon: Leaf,
-      sparkline: mockData.dailyEnergyData.slice(-10).map(d => d.carbon),
-      formatter: formatTons
-    }
-  ];
+  const toggleScheduleStatus = (id) => {
+    setSchedulesList(prev => prev.map(sch => {
+      if (sch.id === id) {
+        const nextStatus = sch.status === 'Completed' ? 'Pending' : 'Completed';
+        triggerToast(`Schedule ${id} marked as ${nextStatus}`);
+        return { ...sch, status: nextStatus };
+      }
+      return sch;
+    }));
+  };
 
-  // Mock handler for newly deployed module
-  const handleAddNewAgentModule = (newAgent) => {
-    triggerToast(`AI Agent [${newAgent.name}] deployed successfully!`);
+  const dismissAlert = (id) => {
+    setAlertsList(prev => prev.filter(a => a.id !== id));
+    triggerToast(`Alert resolved and triaged.`);
+  };
+
+  const downloadFile = (filename, content, type) => {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    triggerToast(`Downloaded ${filename}`);
   };
 
   const handleLogout = () => {
-    triggerToast("Logging out... Session terminated safely.");
-    setTimeout(() => {
-      setIsLoggedIn(false);
-    }, 850);
+    triggerToast("Logging out...");
+    setTimeout(() => setIsLoggedIn(false), 850);
   };
 
+  const filteredWorkOrders = useMemo(() => {
+    return workOrdersList.filter(wo => {
+      const matchSearch = wo.id.toLowerCase().includes(woSearch.toLowerCase()) ||
+                          wo.asset.toLowerCase().includes(woSearch.toLowerCase()) ||
+                          wo.assignedTo.toLowerCase().includes(woSearch.toLowerCase());
+      const matchStatus = woStatusFilter === 'All' || wo.status.toLowerCase() === woStatusFilter.toLowerCase();
+      const matchPriority = woPriorityFilter === 'All' || wo.priority.toLowerCase() === woPriorityFilter.toLowerCase();
+      return matchSearch && matchStatus && matchPriority;
+    });
+  }, [workOrdersList, woSearch, woStatusFilter, woPriorityFilter]);
+
   if (!isLoggedIn) {
+    return <GetStarted onGetStarted={() => setIsLoggedIn(true)} triggerToast={triggerToast} />;
+  }
+
+  if (isLoading || !apiData) {
     return (
-      <>
-        {toastMessage && (
-          <div className="fixed bottom-5 right-5 z-50 bg-brand-accent text-white px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 border border-white/10 animate-bounce">
-            <CheckCircle className="w-4 h-4" />
-            <span className="text-xs font-semibold">{toastMessage}</span>
-          </div>
-        )}
-        <GetStarted onGetStarted={() => setIsLoggedIn(true)} triggerToast={triggerToast} />
-      </>
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+          <span className="text-sm font-semibold text-slate-500">Loading Facility 360 AI Platform...</span>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text flex transition-all duration-300">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex transition-all duration-300">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-brand-accent text-white px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 border border-white/10 animate-bounce">
+        <div className="fixed bottom-5 right-5 z-50 bg-blue-600 text-white px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2">
           <CheckCircle className="w-4 h-4" />
           <span className="text-xs font-semibold">{toastMessage}</span>
         </div>
       )}
 
-      {/* Sidebar Layout */}
+      {/* Left Sidebar */}
       <Sidebar 
         isCollapsed={sidebarCollapsed} 
         setIsCollapsed={setSidebarCollapsed} 
@@ -230,576 +307,926 @@ const AppContent = () => {
         onLogoutClick={handleLogout}
       />
 
-      {/* Main Core Container */}
+      {/* Main Panel */}
       <div 
         className="flex-1 flex flex-col min-h-screen transition-all duration-300"
-        style={{ paddingLeft: sidebarCollapsed ? '72px' : '260px' }}
+        style={{ paddingLeft: sidebarCollapsed ? '72px' : '240px' }}
       >
-        {/* Top Navbar */}
         <TopNavbar 
           sidebarCollapsed={sidebarCollapsed} 
           toggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-          onHelpClick={() => triggerToast("Help system loaded. Documentation is online.")}
+          onHelpClick={() => triggerToast("System documentation online.")}
           onNotificationsClick={() => triggerToast("System notifications synced.")}
         />
 
-        {/* Main Content Area */}
-        <main className="p-4 sm:p-6 mt-16 space-y-6 flex-1 flex flex-col">
-          
-          {isLoading ? (
-            /* Main Loading Skeletons */
-            <div className="space-y-6">
-              <div className="animate-pulse bg-brand-card/40 rounded-2xl h-16 border border-brand-border/50" />
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="animate-pulse bg-brand-card/40 rounded-2xl h-32 border border-brand-border/50" />
-                ))}
+        <main className="p-6 mt-16 space-y-6 flex-1 flex flex-col max-w-7xl w-full mx-auto">
+
+          {/* 1. OVERVIEW */}
+          {activeTab === 'overview' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Overview</h1>
+                  <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5 shadow-xs">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                    REAL-TIME STREAMING
+                  </span>
+                </div>
+
+                {/* 4 Top KPI Cards */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div 
+                    onClick={() => setActiveTab('assets')}
+                    className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
+                  >
+                    <span className="text-xs font-semibold text-slate-500">Total Assets</span>
+                    <h3 className="text-2xl font-black text-slate-900">1,250</h3>
+                  </div>
+                  <div 
+                    onClick={() => setActiveTab('ai-agents')}
+                    className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
+                  >
+                    <span className="text-xs font-semibold text-slate-500">Active agents</span>
+                    <h3 className="text-2xl font-black text-emerald-600">12</h3>
+                  </div>
+                  <div 
+                    onClick={() => setActiveTab('alerts')}
+                    className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
+                  >
+                    <span className="text-xs font-semibold text-slate-500">Total Alerts</span>
+                    <h3 className="text-2xl font-black text-rose-600">5</h3>
+                  </div>
+                  <div 
+                    onClick={() => setActiveTab('analytics')}
+                    className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
+                  >
+                    <span className="text-xs font-semibold text-slate-500">Performance</span>
+                    <h3 className="text-2xl font-black text-emerald-600">92%</h3>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Performance Overview Area Chart */}
+                  <div className="lg:col-span-8 bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-sm font-bold text-slate-800">Performance Overview</h3>
+                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                        Live Ticking Telemetry
+                      </span>
+                    </div>
+                    <div className="h-64">
+                      <WeeklyTrendAreaChart weeklyData={apiData.overview.weekly_savings_trend} />
+                    </div>
+                  </div>
+
+                  {/* Recent Activity */}
+                  <div className="lg:col-span-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
+                    <h3 className="text-sm font-bold text-slate-800">Recent Activity</h3>
+                    <div className="space-y-3 text-xs">
+                      <div 
+                        onClick={() => triggerToast("Inspected maintenance completion logs")}
+                        className="flex items-center justify-between pb-2 border-b border-slate-100 cursor-pointer hover:text-blue-600 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                          <span className="font-medium text-slate-800">Maintenance completed</span>
+                        </div>
+                        <span className="text-slate-400 font-mono">10m ago</span>
+                      </div>
+
+                      <div 
+                        onClick={() => triggerToast("Inspected energy optimization event")}
+                        className="flex items-center justify-between pb-2 border-b border-slate-100 cursor-pointer hover:text-blue-600 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                          <span className="font-medium text-slate-800">Energy usage optimized</span>
+                        </div>
+                        <span className="text-slate-400 font-mono">15m ago</span>
+                      </div>
+
+                      <div 
+                        onClick={() => triggerToast("Inspected security triage log")}
+                        className="flex items-center justify-between cursor-pointer hover:text-blue-600 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                          <span className="font-medium text-slate-800">Security alert resolved</span>
+                        </div>
+                        <span className="text-slate-400 font-mono">1h ago</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="animate-pulse bg-brand-card/40 rounded-2xl h-96 border border-brand-border/50" />
+
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                Provides a quick summary of key metrics and recent activities.
+              </div>
             </div>
-          ) : (
-            <>
-              {/* 1. AI Agents / Active Modules View (Landing Page) */}
-              {(activeTab === 'ai-agents' || activeTab === 'modules-active') && (
+          )}
+
+          {/* 2. DASHBOARD */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Dashboard</h1>
+                  <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5 shadow-xs">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                    LIVE SUB-METER FEED
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div 
+                    onClick={() => setActiveTab('analytics')}
+                    className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
+                  >
+                    <span className="text-xs font-semibold text-slate-500">Energy Usage</span>
+                    <h3 className="text-2xl font-black text-slate-900">12,450 <span className="text-xs font-normal text-slate-400">kWh</span></h3>
+                  </div>
+                  <div 
+                    onClick={() => setActiveTab('work-orders')}
+                    className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
+                  >
+                    <span className="text-xs font-semibold text-slate-500">Maintenance</span>
+                    <h3 className="text-2xl font-black text-emerald-600">8</h3>
+                  </div>
+                  <div 
+                    onClick={() => setSelectedAgentDetails({ id: 'occupancy', name: 'OCCUPANCY AGENT' })}
+                    className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
+                  >
+                    <span className="text-xs font-semibold text-slate-500">Occupancy</span>
+                    <h3 className="text-2xl font-black text-slate-900">73%</h3>
+                  </div>
+                  <div 
+                    onClick={() => setActiveTab('alerts')}
+                    className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
+                  >
+                    <span className="text-xs font-semibold text-slate-500">Alerts</span>
+                    <h3 className="text-2xl font-black text-rose-600">3</h3>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Sub-Meter Stacked Energy Usage Bar Chart */}
+                  <div className="lg:col-span-8 bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-sm font-bold text-slate-800">Usage Overview</h3>
+                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                        Live Sub-Meter Ticker
+                      </span>
+                    </div>
+                    <div className="h-64">
+                      <DailyEnergyBarChart dailyData={apiData.charts.dailyEnergyData} />
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-4 space-y-6">
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-sm font-bold text-slate-800">Alerts</h3>
+                        <button 
+                          onClick={() => setActiveTab('alerts')}
+                          className="text-[10px] font-bold text-blue-600 hover:underline"
+                        >
+                          View All
+                        </button>
+                      </div>
+                      <div className="space-y-2 text-xs">
+                        <div 
+                          onClick={() => dismissAlert('ALT-03')}
+                          className="flex items-center justify-between p-2 rounded-lg bg-rose-50 text-rose-700 cursor-pointer hover:bg-rose-100 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-rose-600 animate-pulse" />
+                            <span className="font-semibold">High energy usage (Floor 3)</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-rose-800 underline">Dismiss</span>
+                        </div>
+
+                        <div 
+                          onClick={() => dismissAlert('ALT-04')}
+                          className="flex items-center justify-between p-2 rounded-lg bg-rose-50 text-rose-700 cursor-pointer hover:bg-rose-100 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-rose-600 animate-pulse" />
+                            <span className="font-semibold">Door left open (Main Gate)</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-rose-800 underline">Dismiss</span>
+                        </div>
+
+                        <div 
+                          onClick={() => dismissAlert('ALT-02')}
+                          className="flex items-center justify-between p-2 rounded-lg bg-amber-50 text-amber-700 cursor-pointer hover:bg-amber-100 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-amber-600" />
+                            <span className="font-semibold">Elevator maintenance (Lift-1)</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-amber-800 underline">Dismiss</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-2">
+                      <h3 className="text-sm font-bold text-slate-800">Top Insights</h3>
+                      <ul className="space-y-1.5 text-xs text-slate-600 list-disc list-inside">
+                        <li className="hover:text-slate-900 cursor-pointer" onClick={() => triggerToast("Inspected 12% energy reduction trend")}>
+                          Energy usage is 12% lower than last month
+                        </li>
+                        <li className="hover:text-slate-900 cursor-pointer" onClick={() => triggerToast("Inspected 20% maintenance cost reduction")}>
+                          Maintenance cost reduced by 20%
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                Detailed overview with charts, KPIs and real-time insights.
+              </div>
+            </div>
+          )}
+
+          {/* 3. AI AGENTS */}
+          {activeTab === 'ai-agents' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">AI Agents</h1>
                 <AIAgents 
+                  agentConfigs={agentConfigs}
                   triggerToast={triggerToast}
                   onDetailsClick={(agent) => setSelectedAgentDetails(agent)}
                   onOrchestrationClick={() => setIsOrchestrationModalOpen(true)}
                   onAddModuleClick={() => setIsAddModalOpen(true)}
                 />
-              )}
+              </div>
 
-              {/* 2. Overview Dashboard */}
-              {activeTab === 'overview' && (
-                <div className="space-y-6">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <div>
-                      <h1 className="text-2xl font-bold text-brand-text tracking-tight m-0">Facility Control Overview</h1>
-                      <p className="text-xs text-brand-textSec mt-1">Unified command panel for HQ Metro Facility 01</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    <div className="lg:col-span-8 space-y-6">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="glass-panel p-5 rounded-2xl bg-brand-card/25 border border-brand-border space-y-2">
-                          <span className="text-[10px] font-bold text-brand-textSec uppercase tracking-wider">CO2 Intensity</span>
-                          <h3 className="text-xl font-bold text-brand-text">4.2 Tons</h3>
-                          <span className="text-[10px] text-brand-success font-semibold flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3 text-brand-success" /> -8.4% this week
-                          </span>
-                        </div>
-                        <div className="glass-panel p-5 rounded-2xl bg-brand-card/25 border border-brand-border space-y-2">
-                          <span className="text-[10px] font-bold text-brand-textSec uppercase tracking-wider">System Alarms</span>
-                          <h3 className="text-xl font-bold text-brand-text">0 Active</h3>
-                          <span className="text-[10px] text-brand-success font-semibold">All systems nominal</span>
-                        </div>
-                        <div className="glass-panel p-5 rounded-2xl bg-brand-card/25 border border-brand-border space-y-2">
-                          <span className="text-[10px] font-bold text-brand-textSec uppercase tracking-wider">Active Workflows</span>
-                          <h3 className="text-xl font-bold text-brand-text">14 Parallel</h3>
-                          <span className="text-[10px] text-brand-accent font-semibold">Orchestrated by AI</span>
-                        </div>
-                      </div>
-
-                      {/* Main Overview chart */}
-                      <div className="glass-panel p-5 rounded-2xl bg-brand-card/25 border border-brand-border">
-                        <h3 className="text-sm font-semibold text-brand-text mb-4 uppercase tracking-wider">Facility Savings Trend</h3>
-                        <div className="h-64">
-                          <WeeklyTrendAreaChart weeklyData={mockData.weeklyEnergyData} />
-                        </div>
-                      </div>
-
-                      <div className="glass-panel p-5 rounded-2xl bg-brand-card/25 border border-brand-border">
-                        <h3 className="text-sm font-semibold text-brand-text mb-4 uppercase tracking-wider">Real-time Sensors Summary</h3>
-                        <SensorTable sensorsData={mockData.sensors.slice(0, 5)} />
-                      </div>
-                    </div>
-                    
-                    <div className="lg:col-span-4 space-y-6">
-                      <RightPanel />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 3. Dashboard Tab (Energy Intelligence View) */}
-              {activeTab === 'dashboard' && (
-                <>
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <div>
-                      <h1 className="text-2xl font-bold text-brand-text tracking-tight m-0">Energy Intelligence Dashboard</h1>
-                      <p className="text-xs text-brand-textSec mt-1">Real-Time Facility Energy Monitoring & Analytics</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
-                    <div className="xl:col-span-3 space-y-6">
-                      {/* KPI Grid */}
-                      <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                        {kpis.map((kpi, idx) => (
-                          <KPICard 
-                            key={idx}
-                            label={kpi.label}
-                            value={kpi.value}
-                            unit={kpi.unit}
-                            trend={kpi.trend}
-                            trendType={kpi.trendType}
-                            icon={kpi.icon}
-                            sparklineData={kpi.sparkline}
-                            formatter={kpi.formatter}
-                          />
-                        ))}
-                      </section>
-
-                      {/* Charts Grid Row 1 */}
-                      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="glass-panel p-5 rounded-2xl bg-brand-card/25 border border-brand-border">
-                          <h3 className="text-sm font-semibold text-brand-text mb-4 uppercase tracking-wider">Real-Time Energy Consumption</h3>
-                          <div className="h-64">
-                            <RealTimeEnergyChart hourlyData={mockData.hourlyEnergyData} />
-                          </div>
-                        </div>
-                        <div className="glass-panel p-5 rounded-2xl bg-brand-card/25 border border-brand-border">
-                          <h3 className="text-sm font-semibold text-brand-text mb-4 uppercase tracking-wider">Daily Energy Usage</h3>
-                          <div className="h-64">
-                            <DailyEnergyBarChart dailyData={mockData.dailyEnergyData} />
-                          </div>
-                        </div>
-                      </section>
-
-                      {/* Charts Grid Row 2 */}
-                      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="glass-panel p-5 rounded-2xl bg-brand-card/25 border border-brand-border">
-                          <h3 className="text-sm font-semibold text-brand-text mb-4 uppercase tracking-wider">Energy Distribution</h3>
-                          <div className="h-60">
-                            <EnergyDistributionPieChart dailyData={mockData.dailyEnergyData} />
-                          </div>
-                        </div>
-                        <div className="glass-panel p-5 rounded-2xl bg-brand-card/25 border border-brand-border">
-                          <h3 className="text-sm font-semibold text-brand-text mb-4 uppercase tracking-wider">Weekly Trend</h3>
-                          <div className="h-60">
-                            <WeeklyTrendAreaChart weeklyData={mockData.weeklyEnergyData} />
-                          </div>
-                        </div>
-                        <div className="glass-panel p-5 rounded-2xl bg-brand-card/25 border border-brand-border">
-                          <h3 className="text-sm font-semibold text-brand-text mb-4 uppercase tracking-wider">Monthly Consumption</h3>
-                          <div className="h-60">
-                            <MonthlyComposedChart dailyData={mockData.dailyEnergyData} />
-                          </div>
-                        </div>
-                      </section>
-
-                      <section className="grid grid-cols-1 gap-6">
-                        <EnergyDistributionProgress dailyData={mockData.dailyEnergyData} />
-                      </section>
-                    </div>
-
-                    <div className="xl:col-span-1 space-y-6">
-                      <RightPanel />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* 4. Work Orders View */}
-              {activeTab === 'work-orders' && (
-                <div className="space-y-6 max-w-5xl mx-auto w-full">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                      <h2 className="text-xl font-bold text-brand-text m-0">Maintenance Work Orders</h2>
-                      <p className="text-xs text-brand-textSec mt-1">Autonomous maintenance dispatches and tickets log.</p>
-                    </div>
-                    <button 
-                      onClick={() => triggerToast("New work order created")}
-                      className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-accent text-white hover:bg-brand-accent/90 transition-all flex items-center gap-1.5"
-                    >
-                      <Plus className="w-4 h-4" /> Create Work Order
-                    </button>
-                  </div>
-
-                  <div className="glass-panel p-5 rounded-2xl bg-brand-card/35 border border-brand-border space-y-4">
-                    <div className="flex gap-3">
-                      <input 
-                        type="text" 
-                        placeholder="Search tickets by ID, asset, or technician..."
-                        className="flex-1 px-3 py-1.5 rounded-lg border border-brand-border bg-brand-bg text-brand-text text-sm placeholder-brand-textSec/50 focus:outline-none focus:border-brand-accent"
-                      />
-                    </div>
-
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead>
-                          <tr className="border-b border-brand-border text-brand-textSec uppercase text-[10px] tracking-wider">
-                            <th className="pb-3 font-semibold">Ticket ID</th>
-                            <th className="pb-3 font-semibold">Asset Target</th>
-                            <th className="pb-3 font-semibold">Description</th>
-                            <th className="pb-3 font-semibold">Technician</th>
-                            <th className="pb-3 font-semibold">Priority</th>
-                            <th className="pb-3 font-semibold">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="border-b border-brand-border/40 hover:bg-brand-border/10 transition-colors">
-                            <td className="py-3 font-mono font-bold text-brand-accent">#WO-4921</td>
-                            <td className="py-3 font-semibold text-brand-text">Chiller B plant</td>
-                            <td className="py-3 text-brand-textSec">Inspect chiller compressor valve gasket seals</td>
-                            <td className="py-3 text-brand-text">Sarah Jenkins</td>
-                            <td className="py-3"><span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-brand-danger/10 text-brand-danger border border-brand-danger/20">Critical</span></td>
-                            <td className="py-3"><span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-brand-accent/10 text-brand-accent border border-brand-accent/25">Dispatched</span></td>
-                          </tr>
-                          <tr className="border-b border-brand-border/40 hover:bg-brand-border/10 transition-colors">
-                            <td className="py-3 font-mono font-bold text-brand-accent">#WO-4819</td>
-                            <td className="py-3 font-semibold text-brand-text">Sector G VAV Box</td>
-                            <td className="py-3 text-brand-textSec">Re-calibrate airflow dampers</td>
-                            <td className="py-3 text-brand-text">Dave R.</td>
-                            <td className="py-3"><span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-brand-warning/10 text-brand-warning border border-brand-warning/20">Medium</span></td>
-                            <td className="py-3"><span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">In Progress</span></td>
-                          </tr>
-                          <tr className="hover:bg-brand-border/10 transition-colors">
-                            <td className="py-3 font-mono font-bold text-brand-accent">#WO-4731</td>
-                            <td className="py-3 font-semibold text-brand-text">Badge scanner C-4</td>
-                            <td className="py-3 text-brand-textSec">Audit Entry Point C-4 badge reader scanner</td>
-                            <td className="py-3 text-brand-text">Alex T.</td>
-                            <td className="py-3"><span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-brand-border/45 text-brand-textSec border border-brand-border">Low</span></td>
-                            <td className="py-3"><span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-brand-success/10 text-brand-success border border-brand-success/20">Closed</span></td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 5. Assets View */}
-              {activeTab === 'assets' && (
-                <div className="space-y-6 max-w-5xl mx-auto w-full">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                      <h2 className="text-xl font-bold text-brand-text m-0">Facility Assets Inventory</h2>
-                      <p className="text-xs text-brand-textSec mt-1">Audit status, location index, and health metrics of telemetry devices.</p>
-                    </div>
-                    <button 
-                      onClick={() => triggerToast("Scanning assets network...")}
-                      className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-accent text-white hover:bg-brand-accent/90 transition-all"
-                    >
-                      Scan System Assets
-                    </button>
-                  </div>
-
-                  <div className="glass-panel p-5 rounded-2xl bg-brand-card/35 border border-brand-border">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead>
-                          <tr className="border-b border-brand-border text-brand-textSec uppercase text-[10px] tracking-wider">
-                            <th className="pb-3 font-semibold">Asset ID</th>
-                            <th className="pb-3 font-semibold">Type</th>
-                            <th className="pb-3 font-semibold">Location</th>
-                            <th className="pb-3 font-semibold">Health Score</th>
-                            <th className="pb-3 font-semibold">Diagnostic Connection</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="border-b border-brand-border/40">
-                            <td className="py-3 font-mono font-bold text-brand-accent">#AST-CHILL-A1</td>
-                            <td className="py-3 font-semibold text-brand-text">HVAC Plant Chiller A</td>
-                            <td className="py-3 text-brand-textSec">Basement Plant Room B-2</td>
-                            <td className="py-3 font-bold text-brand-success">98.5%</td>
-                            <td className="py-3 font-mono text-[11px] text-brand-textSec">BACnet://192.168.1.12:47808</td>
-                          </tr>
-                          <tr className="border-b border-brand-border/40">
-                            <td className="py-3 font-mono font-bold text-brand-accent">#AST-GEN-01</td>
-                            <td className="py-3 font-semibold text-brand-text">Backup Generator 500kVA</td>
-                            <td className="py-3 text-brand-textSec">External Yard North</td>
-                            <td className="py-3 font-bold text-brand-success">100.0%</td>
-                            <td className="py-3 font-mono text-[11px] text-brand-textSec">Modbus://192.168.1.50:502</td>
-                          </tr>
-                          <tr className="border-b border-brand-border/40">
-                            <td className="py-3 font-mono font-bold text-brand-accent">#AST-CAM-SEC3</td>
-                            <td className="py-3 font-semibold text-brand-text">CCTV Camera Dome v2</td>
-                            <td className="py-3 text-brand-textSec">Entry Point Sector C</td>
-                            <td className="py-3 font-bold text-brand-warning">91.2%</td>
-                            <td className="py-3 font-mono text-[11px] text-brand-textSec">ONVIF://192.168.2.103:80</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 6. Monitoring (Sensor Table) */}
-              {activeTab === 'monitoring' && (
-                <div className="space-y-6 max-w-5xl mx-auto w-full">
-                  <div>
-                    <h2 className="text-xl font-bold text-brand-text m-0">Live Sensors Monitoring</h2>
-                    <p className="text-xs text-brand-textSec mt-1">Real-time modbus telemetry data from IoT nodes.</p>
-                  </div>
-                  <div className="glass-panel p-5 rounded-2xl bg-brand-card/35 border border-brand-border">
-                    <SensorTable sensorsData={mockData.sensors} />
-                  </div>
-                </div>
-              )}
-
-              {/* 7. Analytics */}
-              {activeTab === 'analytics' && (
-                <div className="space-y-6 max-w-5xl mx-auto w-full">
-                  <div>
-                    <h2 className="text-xl font-bold text-brand-text m-0">Data Analytics</h2>
-                    <p className="text-xs text-brand-textSec mt-1">Predictive analysis and composite energy timelines.</p>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="glass-panel p-5 rounded-2xl bg-brand-card/35 border border-brand-border">
-                      <h3 className="text-sm font-semibold text-brand-text mb-4 uppercase tracking-wider">Carbon Footprints Forecast</h3>
-                      <div className="h-64">
-                        <ForecastLineChart dailyData={mockData.dailyEnergyData} />
-                      </div>
-                    </div>
-                    <div className="glass-panel p-5 rounded-2xl bg-brand-card/35 border border-brand-border">
-                      <h3 className="text-sm font-semibold text-brand-text mb-4 uppercase tracking-wider">HVAC Operating Efficiency</h3>
-                      <div className="h-64">
-                        <HVACEfficiencyRadialChart />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 8. Reports View */}
-              {activeTab === 'reports' && (
-                <div className="space-y-6 flex-1 flex flex-col justify-center max-w-4xl mx-auto w-full py-10">
-                  <div className="glass-panel p-8 rounded-2xl bg-brand-card/30 border border-brand-border space-y-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-brand-accent/15 border border-brand-accent/25 flex items-center justify-center text-brand-accent">
-                        <FileText className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-bold text-brand-text m-0">Energy Intelligence Reports</h2>
-                        <p className="text-xs text-brand-textSec mt-1">Compile and export automated carbon and cost statistics.</p>
-                      </div>
-                    </div>
-
-                    <div className="h-px bg-brand-border" />
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 rounded-xl border border-brand-border bg-brand-bg/50 flex justify-between items-center">
-                        <div>
-                          <h4 className="text-sm font-semibold text-brand-text">Monthly Sustainability Report</h4>
-                          <p className="text-[11px] text-brand-textSec">PDF • Aggregated cost/carbon statistics for June 2026</p>
-                        </div>
-                        <button 
-                          onClick={() => triggerToast("Generating Monthly Sustainability Report...")}
-                          className="p-2 rounded bg-brand-accent/10 border border-brand-accent/20 text-brand-accent hover:bg-brand-accent/20 transition-colors"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <div className="p-4 rounded-xl border border-brand-border bg-brand-bg/50 flex justify-between items-center">
-                        <div>
-                          <h4 className="text-sm font-semibold text-brand-text">HVAC Duty Cycling Audits</h4>
-                          <p className="text-[11px] text-brand-textSec">CSV • Temperature telemetry and HVAC runtimes</p>
-                        </div>
-                        <button 
-                          onClick={() => triggerToast("Generating HVAC Duty Cycling Audit...")}
-                          className="p-2 rounded bg-brand-accent/10 border border-brand-accent/20 text-brand-accent hover:bg-brand-accent/20 transition-colors"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <div className="p-4 rounded-xl border border-brand-border bg-brand-bg/50 flex justify-between items-center">
-                        <div>
-                          <h4 className="text-sm font-semibold text-brand-text">Daily Peak Demand Profile</h4>
-                          <p className="text-[11px] text-brand-textSec">PDF • Peak demand analytics and sub-meter profiles</p>
-                        </div>
-                        <button 
-                          onClick={() => triggerToast("Generating Peak Demand Profile...")}
-                          className="p-2 rounded bg-brand-accent/10 border border-brand-accent/20 text-brand-accent hover:bg-brand-accent/20 transition-colors"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <div className="p-4 rounded-xl border border-brand-border bg-brand-bg/50 flex justify-between items-center">
-                        <div>
-                          <h4 className="text-sm font-semibold text-brand-text">Executive ESG Carbon Brief</h4>
-                          <p className="text-[11px] text-brand-textSec">PDF • Greenhouse gas Scope 1 & 2 audit brief</p>
-                        </div>
-                        <button 
-                          onClick={() => triggerToast("Generating ESG Carbon Brief...")}
-                          className="p-2 rounded bg-brand-accent/10 border border-brand-accent/20 text-brand-accent hover:bg-brand-accent/20 transition-colors"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 9. Alerts View */}
-              {activeTab === 'alerts' && (
-                <div className="space-y-6 max-w-4xl mx-auto w-full">
-                  <div>
-                    <h2 className="text-xl font-bold text-brand-text m-0">Recent Alerts & Triages</h2>
-                    <p className="text-xs text-brand-textSec mt-1">Telemetry triggers and system fault logs.</p>
-                  </div>
-                  <div className="glass-panel p-5 rounded-2xl bg-brand-card/35 border border-brand-border">
-                    <AlertsSection initialAlerts={mockData.alerts} />
-                  </div>
-                </div>
-              )}
-
-              {/* 10. Schedules View */}
-              {activeTab === 'schedules' && (
-                <div className="space-y-6 max-w-4xl mx-auto w-full">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                      <h2 className="text-xl font-bold text-brand-text m-0">Operational Schedules</h2>
-                      <p className="text-xs text-brand-textSec mt-1">Calendar overrides for energy consumption profiling.</p>
-                    </div>
-                  </div>
-
-                  <div className="glass-panel p-5 rounded-2xl bg-brand-card/35 border border-brand-border space-y-4">
-                    <div className="p-4 rounded-xl border border-brand-border bg-brand-bg/50 space-y-3">
-                      <h4 className="text-sm font-semibold text-brand-text">Occupancy Profile Target Time (Weekly)</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                          <span className="text-[10px] text-brand-textSec uppercase font-bold block mb-1">Weekdays Duty Cycle</span>
-                          <span className="text-xs font-bold text-brand-text">07:00 - 19:00 UTC (Active)</span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-brand-textSec uppercase font-bold block mb-1">Weekend Profile</span>
-                          <span className="text-xs font-bold text-brand-text">Eco Saver mode (24h)</span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-brand-textSec uppercase font-bold block mb-1">Holdups Override</span>
-                          <span className="text-xs font-bold text-brand-text">Disabled</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 11. Integrations View */}
-              {activeTab === 'integrations' && (
-                <div className="space-y-6 max-w-5xl mx-auto w-full">
-                  <div>
-                    <h2 className="text-xl font-bold text-brand-text m-0">Connected Integrations</h2>
-                    <p className="text-xs text-brand-textSec mt-1">Protocol endpoints linking building networks to FacilityOps AI.</p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="glass-panel p-4 rounded-xl bg-brand-card/35 border border-brand-border space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 flex items-center justify-center">
-                          <Link className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-bold text-brand-text uppercase">BACnet IP Protocol</h4>
-                          <span className="text-[9px] text-brand-success font-semibold">Active & Tunneled</span>
-                        </div>
-                      </div>
-                      <p className="text-[11px] text-brand-textSec">Syncs HVAC plants, chiller controllers, and thermostat telemetry.</p>
-                    </div>
-
-                    <div className="glass-panel p-4 rounded-xl bg-brand-card/35 border border-brand-border space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 flex items-center justify-center">
-                          <Link className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-bold text-brand-text uppercase">Modbus TCP Protocol</h4>
-                          <span className="text-[9px] text-brand-success font-semibold">Active</span>
-                        </div>
-                      </div>
-                      <p className="text-[11px] text-brand-textSec">Controls grid substation power meters, and transformer sensors.</p>
-                    </div>
-
-                    <div className="glass-panel p-4 rounded-xl bg-brand-card/35 border border-brand-border space-y-3 opacity-60">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-brand-warning/10 text-brand-warning border border-brand-warning/25 flex items-center justify-center">
-                          <Link className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-bold text-brand-text uppercase">Niagara Framework</h4>
-                          <span className="text-[9px] text-brand-warning font-semibold">Connecting...</span>
-                        </div>
-                      </div>
-                      <p className="text-[11px] text-brand-textSec">BMS endpoint integration wrapper for third-party Honeywell boxes.</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 12. Settings View */}
-              {activeTab === 'settings' && (
-                <div className="space-y-6 flex-1 flex flex-col justify-center max-w-4xl mx-auto w-full py-10">
-                  <div className="glass-panel p-8 rounded-2xl bg-brand-card/30 border border-brand-border space-y-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-brand-accent/15 border border-brand-accent/25 flex items-center justify-center text-brand-accent">
-                        <Sliders className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-bold text-brand-text m-0">Facility Configuration</h2>
-                        <p className="text-xs text-brand-textSec mt-1">Adjust optimization targets, utility tariffs, and agent connectivity.</p>
-                      </div>
-                    </div>
-
-                    <div className="h-px bg-brand-border" />
-
-                    <div className="space-y-4">
-                      <div className="p-4 rounded-xl border border-brand-border bg-brand-bg/50 space-y-3">
-                        <h4 className="text-sm font-semibold text-brand-text">Utility Electricity Rate</h4>
-                        <div className="flex gap-4">
-                          <div className="flex-1">
-                            <label className="text-[10px] text-brand-textSec uppercase font-bold block mb-1">On-Peak Rate ($/kWh)</label>
-                            <input type="number" defaultValue={0.15} className="w-full px-3 py-1.5 rounded border border-brand-border bg-brand-bg text-brand-text text-xs focus:outline-none focus:border-brand-accent" />
-                          </div>
-                          <div className="flex-1">
-                            <label className="text-[10px] text-brand-textSec uppercase font-bold block mb-1">Off-Peak Rate ($/kWh)</label>
-                            <input type="number" defaultValue={0.08} className="w-full px-3 py-1.5 rounded border border-brand-border bg-brand-bg text-brand-text text-xs focus:outline-none focus:border-brand-accent" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-4 rounded-xl border border-brand-border bg-brand-bg/50 space-y-3">
-                        <h4 className="text-sm font-semibold text-brand-text">AI Agent Decision Thresholds</h4>
-                        <div className="flex gap-4">
-                          <div className="flex-1">
-                            <label className="text-[10px] text-brand-textSec uppercase font-bold block mb-1">Max Carbon Target (Monthly Tons)</label>
-                            <input type="number" defaultValue={45.0} className="w-full px-3 py-1.5 rounded border border-brand-border bg-brand-bg text-brand-text text-xs focus:outline-none focus:border-brand-accent" />
-                          </div>
-                          <div className="flex-1">
-                            <label className="text-[10px] text-brand-textSec uppercase font-bold block mb-1">Target HVAC Efficiency (COPs)</label>
-                            <input type="number" defaultValue={4.2} className="w-full px-3 py-1.5 rounded border border-brand-border bg-brand-bg text-brand-text text-xs focus:outline-none focus:border-brand-accent" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-4 rounded-xl border border-brand-accent/20 bg-brand-accent/5 text-xs text-brand-text">
-                      <p><strong>BMS Settings are active in local memory cache.</strong></p>
-                      <p className="text-brand-textSec mt-1">Config changes apply immediately to the AI Agents view parameters.</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-            </>
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                Manage and monitor all AI agents from one place.
+              </div>
+            </div>
           )}
+
+          {/* 4. MODULES */}
+          {activeTab === 'modules' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Modules</h1>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { id: 'energy', title: "Energy Management", desc: "Monitor and optimize energy usage", icon: Zap, target: 'dashboard' },
+                    { id: 'security', title: "Security", desc: "Ensure building and asset safety", icon: Shield, target: 'ai-agents' },
+                    { id: 'maintenance', title: "Maintenance", desc: "Manage and schedule maintenance", icon: Wrench, target: 'work-orders' },
+                    { id: 'inventory', title: "Inventory", desc: "Track and manage inventory", icon: Database, target: 'assets' },
+                    { id: 'parking', title: "Parking", desc: "Monitor and manage parking spaces", icon: Briefcase, target: 'ai-agents' },
+                    { id: 'cleaning', title: "Cleaning", desc: "Manage cleaning operations", icon: RefreshCw, target: 'ai-agents' },
+                    { id: 'water', title: "Water Management", desc: "Monitor water usage and quality", icon: Droplet, target: 'ai-agents' },
+                    { id: 'hvac', title: "HVAC Management", desc: "Control and optimize HVAC systems", icon: Activity, target: 'monitoring' }
+                  ].map((mod, i) => {
+                    const Icon = mod.icon;
+                    return (
+                      <div 
+                        key={i} 
+                        onClick={() => {
+                          if (['energy','maintenance','occupancy','security','water','cleaning','parking'].includes(mod.id)) {
+                            setSelectedAgentDetails({ id: mod.id, name: mod.title.toUpperCase() });
+                          } else {
+                            setActiveTab(mod.target);
+                          }
+                          triggerToast(`Opened ${mod.title}`);
+                        }}
+                        className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-blue-500 hover:shadow-md transition-all cursor-pointer"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-900">{mod.title}</h4>
+                          <p className="text-xs text-slate-500 mt-1">{mod.desc}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                Access and manage all facility modules.
+              </div>
+            </div>
+          )}
+
+          {/* 5. WORK ORDERS */}
+          {activeTab === 'work-orders' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Work Orders</h1>
+                  <button 
+                    onClick={() => setIsWorkOrderModalOpen(true)}
+                    className="px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all flex items-center gap-1.5 shadow-xs"
+                  >
+                    <Plus className="w-4 h-4" /> Create Work Order
+                  </button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <select 
+                    value={woStatusFilter}
+                    onChange={(e) => setWoStatusFilter(e.target.value)}
+                    className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="All">All Status</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+
+                  <select 
+                    value={woPriorityFilter}
+                    onChange={(e) => setWoPriorityFilter(e.target.value)}
+                    className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="All">All Priority</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                    <input 
+                      type="text"
+                      value={woSearch}
+                      onChange={(e) => setWoSearch(e.target.value)}
+                      placeholder="Search tickets..."
+                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wider">
+                          <th className="p-3 font-bold">ID</th>
+                          <th className="p-3 font-bold">Asset</th>
+                          <th className="p-3 font-bold">Priority</th>
+                          <th className="p-3 font-bold">Status</th>
+                          <th className="p-3 font-bold">Assigned To</th>
+                          <th className="p-3 font-bold">Due Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredWorkOrders.map((wo, i) => (
+                          <tr key={i} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td className="p-3 font-semibold text-slate-800">{wo.id}</td>
+                            <td className="p-3 font-medium text-slate-900">{wo.asset}</td>
+                            <td className="p-3">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                wo.priority === 'High' ? 'bg-rose-100 text-rose-700' :
+                                wo.priority === 'Medium' ? 'bg-amber-100 text-amber-700' :
+                                'bg-slate-100 text-slate-600'
+                              }`}>
+                                {wo.priority}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <button
+                                onClick={() => toggleWorkOrderStatus(wo.id)}
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer hover:opacity-80 transition-opacity ${
+                                  wo.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
+                                  wo.status === 'In Progress' ? 'bg-amber-100 text-amber-700' :
+                                  'bg-slate-100 text-slate-700'
+                                }`}
+                              >
+                                {wo.status} ✎
+                              </button>
+                            </td>
+                            <td className="p-3 text-slate-700">{wo.assignedTo}</td>
+                            <td className="p-3 text-slate-500 font-medium">{wo.dueDate}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                Create, track and manage maintenance work orders.
+              </div>
+            </div>
+          )}
+
+          {/* 6. ASSETS */}
+          {activeTab === 'assets' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Assets</h1>
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
+                    <span className="text-xs font-semibold text-slate-500">Total Assets</span>
+                    <h3 className="text-2xl font-black text-slate-900">1,250</h3>
+                  </div>
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
+                    <span className="text-xs font-semibold text-slate-500">Healthy</span>
+                    <h3 className="text-2xl font-black text-emerald-600">1,050</h3>
+                  </div>
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
+                    <span className="text-xs font-semibold text-slate-500">Warning</span>
+                    <h3 className="text-2xl font-black text-amber-600">120</h3>
+                  </div>
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
+                    <span className="text-xs font-semibold text-slate-500">Critical</span>
+                    <h3 className="text-2xl font-black text-rose-600">80</h3>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wider">
+                          <th className="p-3 font-bold">Asset</th>
+                          <th className="p-3 font-bold">Type</th>
+                          <th className="p-3 font-bold">Status</th>
+                          <th className="p-3 font-bold">Location</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { name: 'AC-1021', type: 'HVAC', status: 'Healthy', location: 'Floor 1', badge: 'bg-emerald-100 text-emerald-700' },
+                          { name: 'Lift-1', type: 'Elevator', status: 'Warning', location: 'Lobby', badge: 'bg-amber-100 text-amber-700' },
+                          { name: 'Camera-20', type: 'CCTV', status: 'Offline', location: 'Floor 2', badge: 'bg-rose-100 text-rose-700' },
+                          { name: 'Generator', type: 'Power', status: 'Good', location: 'Basement', badge: 'bg-emerald-100 text-emerald-700' }
+                        ].map((ast, i) => (
+                          <tr 
+                            key={i} 
+                            onClick={() => triggerToast(`Inspected telemetry for ${ast.name} (${ast.type})`)}
+                            className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
+                          >
+                            <td className="p-3 font-semibold text-slate-900">{ast.name}</td>
+                            <td className="p-3 text-slate-600">{ast.type}</td>
+                            <td className="p-3"><span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${ast.badge}`}>{ast.status}</span></td>
+                            <td className="p-3 text-slate-500">{ast.location}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                Manage all building assets and their status.
+              </div>
+            </div>
+          )}
+
+          {/* 7. MONITORING */}
+          {activeTab === 'monitoring' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Monitoring</h1>
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
+                    <span className="text-xs font-semibold text-slate-500">Temperature</span>
+                    <h3 className="text-2xl font-black text-slate-900">24°C</h3>
+                  </div>
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
+                    <span className="text-xs font-semibold text-slate-500">Energy</span>
+                    <h3 className="text-2xl font-black text-slate-900">12,450 <span className="text-xs font-normal text-slate-400">kWh</span></h3>
+                  </div>
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
+                    <span className="text-xs font-semibold text-slate-500">Air Quality</span>
+                    <h3 className="text-2xl font-black text-slate-900">320 <span className="text-xs font-normal text-slate-400">AQI</span></h3>
+                  </div>
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
+                    <span className="text-xs font-semibold text-slate-500">Status</span>
+                    <h3 className="text-2xl font-black text-emerald-600">Good</h3>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <div className="lg:col-span-8 bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
+                    <h3 className="text-sm font-bold text-slate-800">Realtime Sensors</h3>
+                    <div className="h-64">
+                      <RealTimeEnergyChart hourlyData={apiData.charts.hourlyEnergyData} />
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3">
+                    <h3 className="text-sm font-bold text-slate-800">Live Alerts</h3>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between items-center p-2.5 rounded-lg bg-rose-50 text-rose-700">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-rose-600" />
+                          <span className="font-semibold">High energy usage</span>
+                        </div>
+                        <span className="text-slate-400">Floor 3</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2.5 rounded-lg bg-rose-50 text-rose-700">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-rose-600" />
+                          <span className="font-semibold">Water leakage detected</span>
+                        </div>
+                        <span className="text-slate-400">Floor 2</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2.5 rounded-lg bg-amber-50 text-amber-700">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-amber-600" />
+                          <span className="font-semibold">Elevator maintenance due</span>
+                        </div>
+                        <span className="text-slate-400">Lift-1</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                Real-time monitoring of systems and facilities.
+              </div>
+            </div>
+          )}
+
+          {/* 8. ANALYTICS */}
+          {activeTab === 'analytics' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Analytics</h1>
+
+                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-slate-800">Energy Consumption</h3>
+                    <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">This Month ▾</span>
+                  </div>
+                  <div className="h-64">
+                    <MonthlyComposedChart dailyData={apiData.charts.dailyEnergyData} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
+                    <span className="text-xs font-semibold text-slate-500">Cost Savings</span>
+                    <h3 className="text-2xl font-black text-slate-900">$12,450</h3>
+                  </div>
+                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
+                    <span className="text-xs font-semibold text-slate-500">Efficiency</span>
+                    <h3 className="text-2xl font-black text-emerald-600">87%</h3>
+                  </div>
+                </div>
+
+                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-2">
+                  <h3 className="text-sm font-bold text-slate-800">Top Insights</h3>
+                  <ul className="space-y-1 text-xs text-slate-600 list-disc list-inside">
+                    <li>Energy usage is 12% lower than last month</li>
+                    <li>Maintenance cost reduced by 20%</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                Analyze data and generate insights.
+              </div>
+            </div>
+          )}
+
+          {/* 9. REPORTS */}
+          {activeTab === 'reports' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Reports</h1>
+
+                <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wider">
+                          <th className="p-3 font-bold">Report Name</th>
+                          <th className="p-3 font-bold">Type</th>
+                          <th className="p-3 font-bold">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { name: 'Energy Report', type: 'PDF', date: '10 May' },
+                          { name: 'Maintenance Report', type: 'PDF', date: '09 May' },
+                          { name: 'Security Report', type: 'PDF', date: '08 May' },
+                          { name: 'Occupancy Report', type: 'PDF', date: '07 May' }
+                        ].map((rep, i) => (
+                          <tr key={i} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td className="p-3 font-semibold text-slate-900">{rep.name}</td>
+                            <td className="p-3 text-slate-600">{rep.type}</td>
+                            <td className="p-3 text-slate-500 font-medium">{rep.date}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap gap-3">
+                    <button 
+                      onClick={() => downloadFile("Facility_Energy_Report.pdf", "Energy Intelligence Audit Report 2026", "application/pdf")}
+                      className="px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all shadow-xs"
+                    >
+                      Download PDF
+                    </button>
+                    <button 
+                      onClick={() => downloadFile("Facility_Telemetry_Metrics.csv", "Metric,Value\nTotalEnergy,12450\nOccupancy,73%", "text/csv")}
+                      className="px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all shadow-xs"
+                    >
+                      Download Excel
+                    </button>
+                    <button 
+                      onClick={() => downloadFile("Facility_Telemetry_Metrics.csv", "Metric,Value\nTotalEnergy,12450\nOccupancy,73%", "text/csv")}
+                      className="px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all shadow-xs"
+                    >
+                      Download CSV
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                Generate and download various reports.
+              </div>
+            </div>
+          )}
+
+          {/* 10. ALERTS */}
+          {activeTab === 'alerts' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Alerts</h1>
+
+                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3">
+                  <div className="space-y-3 text-xs">
+                    {alertsList.map((alt) => (
+                      <div 
+                        key={alt.id} 
+                        className={`p-3 rounded-lg border flex items-center justify-between transition-all ${
+                          alt.severity === 'critical' ? 'border-rose-200 bg-rose-50' :
+                          alt.severity === 'warning' ? 'border-amber-200 bg-amber-50' :
+                          'border-slate-200 bg-slate-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className={`w-3 h-3 rounded-full ${
+                            alt.severity === 'critical' ? 'bg-rose-600 animate-pulse' :
+                            alt.severity === 'warning' ? 'bg-amber-600' : 'bg-blue-600'
+                          }`} />
+                          <div>
+                            <h4 className="font-bold text-slate-900">{alt.title}</h4>
+                            <span className="text-slate-500">{alt.location}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400 font-medium">{alt.time}</span>
+                          <button 
+                            onClick={() => dismissAlert(alt.id)}
+                            className="text-[10px] font-bold text-slate-500 hover:text-rose-600 p-1 border border-slate-200 bg-white rounded hover:bg-slate-100"
+                            title="Resolve alert"
+                          >
+                            Resolve
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {alertsList.length === 0 && (
+                      <div className="p-6 text-center text-slate-400 font-semibold">
+                        All alerts resolved! Systems operating nominally.
+                      </div>
+                    )}
+                  </div>
+
+                  {alertsList.length > 0 && (
+                    <div className="text-center pt-3">
+                      <button 
+                        onClick={() => {
+                          setAlertsList([]);
+                          triggerToast("All alerts resolved and triaged.");
+                        }}
+                        className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                      >
+                        View all alerts
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                View and manage system alerts and notifications.
+              </div>
+            </div>
+          )}
+
+          {/* 11. SCHEDULES */}
+          {activeTab === 'schedules' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Schedules</h1>
+                  <button 
+                    onClick={() => setIsScheduleModalOpen(true)}
+                    className="px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all shadow-xs"
+                  >
+                    Add Schedule
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wider">
+                          <th className="p-3 font-bold">Date</th>
+                          <th className="p-3 font-bold">Activity</th>
+                          <th className="p-3 font-bold">Time</th>
+                          <th className="p-3 font-bold">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {schedulesList.map((sch, i) => (
+                          <tr key={i} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td className="p-3 font-medium text-slate-900">{sch.date}</td>
+                            <td className="p-3 font-semibold text-slate-900">{sch.activity}</td>
+                            <td className="p-3 text-slate-500">{sch.time}</td>
+                            <td className="p-3">
+                              <button
+                                onClick={() => toggleScheduleStatus(sch.id)}
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer hover:opacity-80 transition-opacity ${
+                                  sch.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                                }`}
+                              >
+                                {sch.status} ✎
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                Manage and view maintenance schedules.
+              </div>
+            </div>
+          )}
+
+          {/* 12. INTEGRATIONS */}
+          {activeTab === 'integrations' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Integrations</h1>
+
+                <div className="bg-white rounded-xl border border-slate-200 shadow-xs divide-y divide-slate-100">
+                  {[
+                    "Google Maps",
+                    "IoT Sensors",
+                    "Email Service",
+                    "SMS Service",
+                    "WhatsApp API"
+                  ].map((item, i) => (
+                    <div key={i} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
+                          {item[0]}
+                        </div>
+                        <span className="text-xs font-bold text-slate-900">{item}</span>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
+                        Connected
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                Connect and manage third-party integrations.
+              </div>
+            </div>
+          )}
+
+          {/* 13. SETTINGS */}
+          {activeTab === 'settings' && (
+            <div className="space-y-6 flex-1 flex flex-col justify-between">
+              <div className="space-y-6">
+                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Settings</h1>
+
+                <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Profile Information</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">User Full Name</label>
+                        <input 
+                          type="text" 
+                          value={profileName}
+                          onChange={(e) => setProfileName(e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Role Title</label>
+                        <input 
+                          type="text" 
+                          readOnly
+                          value="Facility Administrator"
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-xs text-slate-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">System Preferences</h3>
+                    <div className="space-y-3 text-xs">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-bold text-slate-900 block">Real-time Telemetry Notifications</span>
+                          <span className="text-slate-500">Receive alert popups on anomalous sensor triggers</span>
+                        </div>
+                        <input 
+                          type="checkbox" 
+                          checked={notificationsEnabled}
+                          onChange={(e) => {
+                            setNotificationsEnabled(e.target.checked);
+                            triggerToast(`Notifications ${e.target.checked ? 'enabled' : 'disabled'}`);
+                          }}
+                          className="w-4 h-4 accent-blue-600 cursor-pointer"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-bold text-slate-900 block">Auto-Save Telemetry Logs</span>
+                          <span className="text-slate-500">Automatically sync microservice log streams to local database</span>
+                        </div>
+                        <input 
+                          type="checkbox" 
+                          checked={autoSaveEnabled}
+                          onChange={(e) => {
+                            setAutoSaveEnabled(e.target.checked);
+                            triggerToast(`Auto-save ${e.target.checked ? 'enabled' : 'disabled'}`);
+                          }}
+                          className="w-4 h-4 accent-blue-600 cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button 
+                      onClick={() => triggerToast("Settings saved successfully!")}
+                      className="px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all shadow-xs"
+                    >
+                      Save Configuration
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200 text-xs font-semibold text-slate-500">
+                Manage application settings and preferences.
+              </div>
+            </div>
+          )}
+
         </main>
 
-        {/* Footer */}
         <Footer />
       </div>
 
-      {/* OVERLAY MODALS & DRAWERS */}
+      {/* Overlays */}
       <AddModuleModal 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)}
-        onAdd={handleAddNewAgentModule}
+        onAdd={(mod) => triggerToast(`Deployed: ${mod.name}`)}
+      />
+
+      <AddWorkOrderModal 
+        isOpen={isWorkOrderModalOpen}
+        onClose={() => setIsWorkOrderModalOpen(false)}
+        onAdd={handleAddNewWorkOrder}
+      />
+
+      <AddScheduleModal 
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        onAdd={handleAddNewSchedule}
       />
 
       <AskAIDrawer 
@@ -817,7 +1244,8 @@ const AppContent = () => {
       <AgentDetailsModal 
         isOpen={selectedAgentDetails !== null} 
         onClose={() => setSelectedAgentDetails(null)} 
-        agent={selectedAgentDetails} 
+        agent={selectedAgentDetails}
+        onApplyConfig={handleApplyAgentConfig}
         triggerToast={triggerToast}
       />
     </div>

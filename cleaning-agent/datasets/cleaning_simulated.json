@@ -1,0 +1,14 @@
+{
+  "summary": {
+    "cleanliness_index_pct": 95.0,
+    "daily_cycles_completed": 24,
+    "staff_efficiency_pct": 118.0,
+    "active_cleaning_robots": 6,
+    "pending_sanitation_tasks": 2
+  },
+  "zones": [
+    { "id": "CLN-F1", "zone": "Floor 1 Reception", "lastSanitized": "20m ago", "score": "98%", "status": "Sanitized" },
+    { "id": "CLN-F2", "zone": "Floor 2 Restroom Hub", "lastSanitized": "45m ago", "score": "92%", "status": "Scheduled Soon" },
+    { "id": "CLN-F4", "zone": "Floor 4 Event Center", "lastSanitized": "10m ago", "score": "99%", "status": "Sanitized" }
+  ]
+}
